@@ -5,15 +5,16 @@
 > 无需任何 MCP，文件系统 + LLM 推理即可工作。
 
 - **Skill 名称**：`VioletEyes`
-- **开发者**：Cr1m3rA
 - **版本**：1.0.0
 - **协议**：仅限已获授权的安全测试、代码评审与安全研究
 - **Agent 入口**：`SKILL.md`
 - **元数据**：`skill.json`
 
+[![OWASP](https://img.shields.io/badge/OWASP-Top%2010%20%2B%20API%20Top%2010-3F5E96)](docs/04-vulnerability-catalog.md) [![CWE](https://img.shields.io/badge/CWE-Mapped-orange)](docs/04-vulnerability-catalog.md) [![CVSS](https://img.shields.io/badge/CVSS-v3.1%20Inspired-red)](docs/05-html-report.md) [![Multi--Lang](https://img.shields.io/badge/Multi--Language-10%2B%20Languages-blue)](#二支持的语言与框架) [![Snippet](https://img.shields.io/badge/Snippet--Mode-Supported-green)](workflows/snippet-audit.md) [![No%20MCP](https://img.shields.io/badge/MCP-Not%20Required-lightgrey)](#一violeteyes-是什么)
+
 ---
 
-## 一、VioletEyes 是什么
+## 🛰 一、VioletEyes 是什么
 
 VioletEyes 提供给 LLM Agent 一套**可复用的源码审计工作流**。
 当用户给出一个本地仓库、Git URL、压缩包，或一段不完整的代码片段时，
@@ -30,7 +31,7 @@ Agent 能够自主完成以下步骤并产出审计报告：
 
 ---
 
-## 二、支持的语言与框架
+## 🧭 二、支持的语言与框架
 
 **语言层面**：
 
@@ -57,7 +58,7 @@ Agent 能够自主完成以下步骤并产出审计报告：
 
 ---
 
-## 三、漏洞类型与规范遵循
+## 🛡 三、漏洞类型与规范遵循
 
 漏洞分类严格对齐 **OWASP Top 10 (2021 / 2025 draft)**、**OWASP API Security Top 10 (2023)** 与 **CWE** 编号体系。
 风险评级借鉴 **CVSS v3.1** 的三轴思想（Exploitability / Impact / Confidence），
@@ -65,27 +66,27 @@ Agent 能够自主完成以下步骤并产出审计报告：
 
 覆盖的典型漏洞类别包括（但不限于）：
 
-- 注入类：SQL 注入、NoSQL 注入、LDAP/XPath 注入、OS 命令注入、`eval` 代码注入、模板注入（SSTI / OGNL / SpEL）
-- 跨站类：反射型 / 存储型 / DOM 型 XSS、`v-html` / `dangerouslySetInnerHTML` 误用
-- 文件类：任意文件读写、路径遍历、Zip Slip、不安全上传
-- 反序列化类：Java `ObjectInputStream`、PHP `unserialize`、Python `pickle`、Node `node-serialize`、Go `gob`、Ruby `YAML.load`
-- 网络类：SSRF、开放重定向、CSRF、CORS 误配置、CRLF 头注入
-- 鉴权类：IDOR / BOLA、BFLA、缺失鉴权、JWT 漏洞、Session Fixation
-- 配置类：危险依赖（Log4Shell / Spring4Shell）、默认凭据、Debug 模式开启、缺失安全头、硬编码密钥
+- 🧨 **注入类**：SQL 注入、NoSQL 注入、LDAP/XPath 注入、OS 命令注入、`eval` 代码注入、模板注入（SSTI / OGNL / SpEL）
+- 🪓 **跨站类**：反射型 / 存储型 / DOM 型 XSS、`v-html` / `dangerouslySetInnerHTML` 误用
+- 📁 **文件类**：任意文件读写、路径遍历、Zip Slip、不安全上传
+- 💣 **反序列化类**：Java `ObjectInputStream`、PHP `unserialize`、Python `pickle`、Node `node-serialize`、Go `gob`、Ruby `YAML.load`
+- 🌐 **网络类**：SSRF、开放重定向、CSRF、CORS 误配置、CRLF 头注入
+- 🔐 **鉴权类**：IDOR / BOLA、BFLA、缺失鉴权、JWT 漏洞、Session Fixation
+- ⚙️ **配置类**：危险依赖（Log4Shell / Spring4Shell）、默认凭据、Debug 模式开启、缺失安全头、硬编码密钥
 
 详细列表与判定规则见 [`docs/04-vulnerability-catalog.md`](docs/04-vulnerability-catalog.md)。
 
 ---
 
-## 四、五阶段工作方法
+## 🪜 四、五阶段工作方法
 
 | 阶段 | 名称 | 关键动作 |
 |---|---|---|
-| Phase 1 | 侦察 (Recon) | 列出顶层目录，读取所有 manifest，输出 `framework_profile.json` |
-| Phase 2 | 入口定位 (Entry Discovery) | 按特征库定位主入口，枚举所有 HTTP 入口，输出 `assets.json` 草稿 |
-| Phase 3 | 步进式读取 (Step-wise Reading) | 维护读队列，按 offset/limit 分块读文件，命中 token 预算 80% 即停止 |
-| Phase 4 | 漏洞挖掘 (Mining) | sink 模式匹配 + 反向追溯 + LLM 可达性推理，输出 `findings.json` |
-| Phase 5 | 报告 (Reporting) | 渲染 `templates/report.html` → 写入 `<source>/code-audit-report.html` |
+| Phase 1 | 🔍 侦察 (Recon) | 列出顶层目录，读取所有 manifest，输出 `framework_profile.json` |
+| Phase 2 | 🧷 入口定位 (Entry Discovery) | 按特征库定位主入口，枚举所有 HTTP 入口，输出 `assets.json` 草稿 |
+| Phase 3 | 📖 步进式读取 (Step-wise Reading) | 维护读队列，按 offset/limit 分块读文件，命中 token 预算 80% 即停止 |
+| Phase 4 | 🪤 漏洞挖掘 (Mining) | sink 模式匹配 + 反向追溯 + LLM 可达性推理，输出 `findings.json` |
+| Phase 5 | 🖨 报告 (Reporting) | 渲染 `templates/report.html` → 写入 `<source>/code-audit-report.html` |
 
 阶段三与阶段四的细节是本 Skill 与“普通读代码”最大的区别，
 详见 [`docs/03-code-reading-strategy.md`](docs/03-code-reading-strategy.md) 与
@@ -93,7 +94,7 @@ Agent 能够自主完成以下步骤并产出审计报告：
 
 ---
 
-## 五、使用方法
+## 🚀 五、使用方法
 
 ### 5.1 加载 Skill
 
@@ -141,7 +142,7 @@ claude --add-dir ~/.claude/skills/VioletEyes
 
 ---
 
-## 六、能力边界
+## 🚧 六、能力边界
 
 **允许的行为**：
 
@@ -162,7 +163,7 @@ claude --add-dir ~/.claude/skills/VioletEyes
 
 ---
 
-## 七、目录结构
+## 🗂 七、目录结构
 
 ```
 VioletEyes/
@@ -221,7 +222,7 @@ VioletEyes/
 
 ---
 
-## 八、配套 Skill：黑盒联动（待开发）
+## 🔌 八、配套 Skill：黑盒联动（待开发）
 
 > **状态：待开发。** 本节为占位说明，配套的黑盒方向 Skill 当前**尚未实现**，
 > 计划中而非已发布。代码中保留了联动所需的字段定义（`url_or_path` / `method` / `parameter`）与
@@ -233,7 +234,7 @@ VioletEyes/
 
 ---
 
-## 九、样例
+## 🧪 九、样例
 
 完整审计演示见 [`examples/`](examples/)：
 
@@ -243,9 +244,7 @@ VioletEyes/
 
 ---
 
-## 十、其他
-
- 由 **Cr1m3rA** 维护。
+## 📝 十、备注
 
 - 本工具的“智能”来自 LLM 对调用链与上下文的推理；grep / Read 仅负责把相关代码搬入上下文，
   **判断 sink 是否真实可达永远是 LLM 的事**。
