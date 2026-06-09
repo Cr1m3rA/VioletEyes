@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://code-audit-skill/schemas/finding.json",
-  "title": "CodeAuditSkill Finding",
-  "description": "Single vulnerability finding produced by CodeAuditSkill. Field names are aligned with pentestskill where overlapping, with code-audit specific additions (file_path, file_line, call_chain, language, framework).",
+  "$id": "https://violet-eyes/schemas/finding.json",
+  "title": "VioletEyes Finding",
+  "description": "Single vulnerability finding produced by VioletEyes. Fields that overlap with the planned blackbox (penetration testing) Skill — url_or_path, method, parameter — are reserved for future cross-report correlation; the blackbox Skill is currently in planned status and not part of this release.",
   "type": "object",
   "required": ["id", "title", "severity", "file_path", "language"],
   "properties": {
@@ -94,7 +94,7 @@
 
     "url_or_path": {
       "type": "string",
-      "description": "HTTP path/URL where this finding can be triggered. Aligned with pentestskill for cross-report correlation."
+      "description": "HTTP path/URL where this finding can be triggered. Reserved for cross-report correlation with the planned blackbox Skill."
     },
     "method": {
       "type": "string",
@@ -102,7 +102,7 @@
     },
     "parameter": {
       "type": "string",
-      "description": "Vulnerable parameter name, aligned with pentestskill for cross-report correlation"
+      "description": "Vulnerable parameter name. Reserved for cross-report correlation with the planned blackbox Skill."
     },
     "vuln_class": {
       "type": "string",

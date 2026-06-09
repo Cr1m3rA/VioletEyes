@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CodeAuditSkill — Tree Index
+VioletEyes — Tree Index
 
 构建仓库的轻量级文件树索引（路径 + 扩展名 + 大小），用于 Agent 决定读哪些文件。
 不读文件内容，只 `ls` 一下。
@@ -96,7 +96,7 @@ def classify(item: Dict) -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CodeAuditSkill Tree Index")
+    parser = argparse.ArgumentParser(description="VioletEyes Tree Index")
     parser.add_argument("root")
     parser.add_argument("--depth", type=int, default=3)
     parser.add_argument("--include-tests", action="store_true")

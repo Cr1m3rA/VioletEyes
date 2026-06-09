@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """
-CodeAuditSkill — Extract For Pentest
+VioletEyes — Extract For Blackbox (Planned)
 
-从 code-audit-report.html 中提取可喂给 pentestskill 的目标列表。
-用于白盒 + 黑盒协同。
+从 code-audit-report.html 中提取可移交黑盒层验证的目标列表。
+**当前状态：待开发。** 配套的黑盒方向 Skill 尚未实现，本脚本仅作接口占位，
+不会自动调用任何外部黑盒服务；运行结果可作为将来联动的输入参考。
+
+保留字段：
+  - url_or_path / method / parameter
+  - file_path / severity / finding id
 
 Usage:
-    python3 scripts/extract_for_pentest.py code-audit-report.html \\
+    python3 scripts/extract_for_blackbox.py code-audit-report.html \\
         --min-severity High \\
         --output targets.txt
 """
@@ -19,14 +24,17 @@ from typing import List, Dict
 
 
 def parse_args():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(
+        description="VioletEyes 抽取脚本（黑盒联动接口占位，待开发）"
+    )
     p.add_argument("report", default="code-audit-report.html")
     p.add_argument("--findings", default="findings.json",
                    help="Source findings.json (alternative to parsing HTML)")
     p.add_argument("--min-severity", default="Medium",
                    choices=["Informational", "Low", "Medium", "High", "Critical"])
     p.add_argument("--output", default="targets.txt")
-    p.add_argument("--format", default="text", choices=["text", "json", "pentestskill-input"])
+    p.add_argument("--format", default="text",
+                   choices=["text", "json", "blackbox-input"])
     return p.parse_args()
 
 
@@ -98,8 +106,8 @@ def main():
                 "parameter": param,
                 "file": f.get("file_path", ""),
             })
-        elif args.format == "pentestskill-input":
-            # 适合直接喂给 pentestskill 的 prompt
+        elif args.format == "blackbox-input":
+            # 待开发：抽出后可移交未来配套黑盒 Skill 验证
             targets.append(
                 f"- [{sev}] {method} {url} (parameter={param}) — "
                 f"file: {f.get('file_path','?')}"
@@ -109,16 +117,17 @@ def main():
         Path(args.output).write_text("\n".join(targets), encoding="utf-8")
     elif args.format == "json":
         Path(args.output).write_text(json.dumps(targets, indent=2, ensure_ascii=False), encoding="utf-8")
-    elif args.format == "pentestskill-input":
+    elif args.format == "blackbox-input":
         header = (
-            "# Extracted from code-audit-report.html\n"
-            f"# Min severity: {args.min_severity}\n"
-            f"# Total: {len(targets)} target(s)\n\n"
-            "请用 pentestskill 对以下白盒层产出的目标做黑盒 PoC 验证：\n\n"
-        )
+            "# Extracted from code-audit-report.html (VioletEyes)\n"
+            "# Min severity: {sev}\n"
+            "# Total: {n} target(s)\n"
+            "# Note: 配套黑盒 Skill 尚未实现，仅作接口占位\n\n"
+        ).format(sev=args.min_severity, n=len(targets))
         Path(args.output).write_text(header + "\n".join(targets), encoding="utf-8")
 
     print(f"[OK] extracted {len(targets)} target(s) to {args.output}")
+    print("[NOTE] 黑盒联动 Skill 处于待开发状态，本次抽取结果仅作接口占位。")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CodeAuditSkill — Report Renderer
+VioletEyes — Report Renderer
 
 读取 findings.json / assets.json / framework_profile.json / execution.log
 与 templates/report.html 模板，生成 code-audit-report.html。
@@ -539,7 +539,7 @@ def render(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CodeAuditSkill Report Renderer")
+    parser = argparse.ArgumentParser(description="VioletEyes Report Renderer")
     parser.add_argument("--findings", default="findings.json")
     parser.add_argument("--assets", default="assets.json")
     parser.add_argument("--profile", default="framework_profile.json")
@@ -576,7 +576,8 @@ def main():
     template = Path(args.report_template).read_text(encoding="utf-8")
 
     tool_versions = {
-        "code-audit-skill": "1.0.0",
+        "violeteyes": "1.0.0",
+        "author": "Cr1m3rA",
         "llm": "claude-opus-4-8",
         "python": sys.version.split()[0],
         "purpose": "白盒源码审计",

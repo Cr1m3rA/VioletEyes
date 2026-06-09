@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://code-audit-skill/schemas/asset.json",
-  "title": "CodeAuditSkill Asset",
-  "description": "Single code asset (HTTP entry, component, module) audited by CodeAuditSkill. Aligned with pentestskill where overlapping, with code-audit specific additions (language, framework, call_site).",
+  "$id": "https://violet-eyes/schemas/asset.json",
+  "title": "VioletEyes Asset",
+  "description": "Single code asset (HTTP entry, component, module) audited by VioletEyes. Field names that overlap with the planned blackbox (penetration testing) Skill are reserved for cross-report correlation; the blackbox Skill is currently in planned status and not part of this release.",
   "type": "object",
   "required": ["id", "type", "language", "file_path"],
   "properties": {

@@ -2,7 +2,7 @@
 
 ## 1.1 总体目标
 
-code-audit-skill 的目标是在**不一次性拉全仓库**的前提下，让 LLM Agent 自主完成：
+VioletEyes 的目标是在**不一次性拉全仓库**的前提下，让 LLM Agent 自主完成：
 
 ```
 语言/框架识别 → 入口定位 → 步进式读代码 → sink/source 追踪 → 可达性推理 → 报告
@@ -33,7 +33,7 @@ code-audit-skill 的目标是在**不一次性拉全仓库**的前提下，让 L
 └──────────────────────────────────────────────────────────────┘
          │
          ▼
-   code-audit-report.html  (视觉与 pentestskill 对齐)
+   code-audit-report.html
 ```
 
 ## 1.3 五阶段流水线
@@ -243,15 +243,10 @@ LLM 输出：
 | snippet 模式无 import 上下文 | 标注 confidence ≤ Medium |
 | token 预算耗尽 | 立刻出报告，标 partial=true |
 
-## 1.7 与 pentestskill 协同
+## 1.7 黑盒联动（待开发）
 
-code-audit-skill 的 finding JSON 包含：
-```json
-{
-  "url_or_path": "/api/user/{id}",
-  "method": "GET",
-  "parameter": "id"
-}
-```
+VioletEyes 的 finding JSON 在 `url_or_path` / `method` / `parameter` 字段中保留了
+与未来配套黑盒方向 Skill 兼容的命名约定，便于将来在合并归档时直接对齐。
 
-可以直接喂给 `pentestskill` 作为 target 列表，做黑盒验证。
+**当前状态：待开发。** 配套的黑盒 Skill 尚未实现，本 Skill 不会调用任何外部黑盒服务。
+上述字段在当前版本中仅作结构化记录，无任何下游消费方。

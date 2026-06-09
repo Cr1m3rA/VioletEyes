@@ -1,13 +1,14 @@
 {
   "skills": [
     {
-      "name": "code-audit-skill",
+      "name": "VioletEyes",
+      "version": "1.0.0",
+      "author": "Cr1m3rA",
       "path": "./",
       "autoLoad": true,
       "mcp": [],
       "preferredMcp": null,
-      "fallbackMcp": null,
-      "relatedSkills": ["pentestskill"]
+      "fallbackMcp": null
     }
   ],
   "permissions": {
@@ -66,7 +67,9 @@
     "temperature": 0.2,
     "system_prompt_file": "./system-prompt.md"
   },
-  "codeauditskill": {
+  "violeteyes": {
+    "skill_name": "VioletEyes",
+    "author": "Cr1m3rA",
     "token_budget": {
       "default": 200000,
       "snippet_mode": 50000,
@@ -94,19 +97,20 @@
       "default_base": "HEAD~1",
       "default_head": "HEAD"
     },
-    "pentestskill_integration": {
-      "enabled": true,
-      "extract_command": "python3 scripts/extract_for_pentest.py code-audit-report.html",
+    "degradation": {
+      "log_prefix": "[DEGRADED:",
+      "report_section": "审计降级说明",
+      "warn_on_partial": true
+    },
+    "blackbox_integration": {
+      "status": "planned",
+      "description": "与配套的渗透测试方向 Skill 联动。当前未启用，不会调用任何外部黑盒服务。",
+      "extract_command": "python3 scripts/extract_for_blackbox.py code-audit-report.html",
       "field_mapping": {
         "url": "url_or_path",
         "method": "method",
         "param": "parameter"
       }
-    },
-    "degradation": {
-      "log_prefix": "[DEGRADED:",
-      "report_section": "审计降级说明",
-      "warn_on_partial": true
     }
   }
 }

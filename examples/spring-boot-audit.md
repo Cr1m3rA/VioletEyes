@@ -39,7 +39,7 @@ spring-boot-user-api/
 
 用户输入：
 ```
-请使用 code-audit-skill 审计 ./example-projects/spring-boot-user-api
+请使用 VioletEyes 审计 ./example-projects/spring-boot-user-api
 ```
 
 ### 2.2 Phase 1: 侦察
@@ -417,13 +417,11 @@ public static SearchFilter parseFilter(String json) throws IOException {
 4. **修复建议** — 提供具体可粘贴的代码（不是"加 WAF"）
 5. **PoC** — 给出 curl 文本但 Agent 不直接执行
 
-## 5. 与 pentestskill 协同
+## 5. 关于黑盒联动（待开发）
 
-将 FND-0003 的 `url_or_path` / `method` / `parameter` 喂给 pentestskill：
+> 当前状态：配套的黑盒方向 Skill 尚未实现，本节为占位说明。
 
-```
-请用 pentestskill 验证以下目标：
-POST /api/users/search (searchFilter header)
-```
-
-pentestskill 会构造请求验证 RCE，确认可利用性。两份报告并排归档。
+FND-0003 等 finding 的 `url_or_path` / `method` / `parameter` 字段已按
+与未来配套黑盒 Skill 兼容的命名约定保留。
+待该 Skill 发布后，可直接抽取上述字段做黑盒 PoC 验证，并形成"白盒定位 + 黑盒验证"
+的双报告闭环。当前不会触发任何外部黑盒调用。

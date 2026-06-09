@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CodeAuditSkill — Sink Pattern Detector
+VioletEyes — Sink Pattern Detector
 
 读取一个文件，匹配危险函数 sink。Agent 在 Phase 4 调用，作为 LLM 推理的预筛。
 不替代 LLM 推理——只是把可能的位置圈出来。
@@ -192,7 +192,7 @@ def detect_sinks(content: str, language: str, file: Path) -> List[Dict]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CodeAuditSkill Sink Detector")
+    parser = argparse.ArgumentParser(description="VioletEyes Sink Detector")
     parser.add_argument("file", help="Path to source file")
     parser.add_argument("--language", default=None, help="Force language (otherwise detect from extension)")
     parser.add_argument("--json", action="store_true", help="JSON output")

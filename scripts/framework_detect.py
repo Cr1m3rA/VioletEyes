@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CodeAuditSkill — Framework Detector
+VioletEyes — Framework Detector
 
 扫描仓库根目录，输出 framework_profile.json。
 由 Agent 在 Phase 1 (Recon) 调用。
@@ -698,7 +698,7 @@ def primary_language(manifests: List[Path], frameworks: List[Dict]) -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CodeAuditSkill Framework Detector")
+    parser = argparse.ArgumentParser(description="VioletEyes Framework Detector")
     parser.add_argument("root", help="Path to repo root")
     parser.add_argument("--output", default="framework_profile.json")
     args = parser.parse_args()

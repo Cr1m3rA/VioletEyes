@@ -223,7 +223,7 @@ Agent 不应审计 `dist/` / `build/`，但**应该**：
 }
 ```
 
-## 5. 危险的前端依赖（同 pentestskill）
+## 5. 危险的前端依赖
 
 - `dompurify < 3.0.6` → XSS bypass
 - `marked < 4.0.10` → XSS

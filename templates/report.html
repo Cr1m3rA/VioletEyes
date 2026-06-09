@@ -28,7 +28,7 @@
 
 <style>
   /* ============================================================
-     CodeAuditSkill 报告样式（与 pentestskill 视觉对齐）
+     VioletEyes 报告样式
      ============================================================ */
   :root {
     --bg: #ffffff;
@@ -49,7 +49,7 @@
     --sev-low:      #17a2b8;
     --sev-info:     #6c757d;
 
-    --code-audit-accent: #9333ea;   /* code-audit-skill 主题色（与 pentest 区分） */
+    --code-audit-accent: #9333ea;   /* VioletEyes 主题色 */
   }
 
   @media (prefers-color-scheme: dark) {
@@ -705,7 +705,7 @@
       <li><strong>漏洞类型</strong>：注入、越权、认证、SSRF、反序列化、业务逻辑、配置等 30+ 类</li>
       <li><strong>语言支持</strong>：Java / Python / PHP / JavaScript / TypeScript / Go / Ruby / C# / Rust / Vue / React / Angular / Svelte + SQL / YAML / JSON 配置</li>
       <li><strong>审计模式</strong>：{{MODE}}</li>
-      <li><strong>工具</strong>：CodeAuditSkill Agent（LLM 推理） + 可选 semgrep / codeql 加速</li>
+      <li><strong>工具</strong>：VioletEyes Agent（LLM 推理） + 可选 semgrep / codeql 加速</li>
     </ul>
   </section>
 
@@ -785,11 +785,10 @@
       </tbody>
     </table>
 
-    <h3>6.5 与 pentestskill 协同说明</h3>
-    <p>本报告中的 finding 含 <code>url_or_path / method / parameter</code> 字段，可直接喂给 <code>pentestskill</code> 做黑盒 PoC 验证：</p>
-    <pre><code class="language-bash"># 提取本报告中的所有 URL 喂给 pentestskill
-python3 scripts/extract_for_pentest.py code-audit-report.html > targets.txt
-claude "请使用 pentestskill 对以下目标做验证：$(cat targets.txt)"</code></pre>
+    <h3>6.5 关于黑盒联动（待开发）</h3>
+    <p>本报告中的 finding 含 <code>url_or_path / method / parameter</code> 字段，已按与未来配套黑盒 Skill 兼容的命名约定保留。
+    配套的黑盒方向 Skill 当前处于待开发状态，因此本报告不会触发任何外部黑盒调用。
+    上线后将在本节补全联动脚本与调用方式。</p>
   </section>
 
   <!-- ====================== 7. 免责声明 ====================== -->
@@ -812,9 +811,8 @@ claude "请使用 pentestskill 对以下目标做验证：$(cat targets.txt)"</c
 </main>
 
 <footer>
-  <p>报告由 <strong>CodeAuditSkill Agent v1.0</strong> 自动生成 · 生成时间 {{REPORT_DATE}}</p>
+  <p>报告由 <strong>VioletEyes Agent v1.0</strong> 自动生成 · 开发者 Cr1m3rA · 生成时间 {{REPORT_DATE}}</p>
   <p>本报告遵循 <a href="https://owasp.org/" style="color: var(--code-audit-accent);">OWASP Testing Guide</a> · <a href="https://cwe.mitre.org/" style="color: var(--code-audit-accent);">CWE</a> 标准</p>
-  <p>建议与 <a href="../pentestskill/pentest-report.html" style="color: var(--code-audit-accent);">pentestskill 黑盒报告</a> 并排阅读</p>
 </footer>
 
 <!-- ====================== 图表脚本 ====================== -->

@@ -1,8 +1,8 @@
 {
-  "name": "code-audit-skill",
+  "name": "VioletEyes",
   "version": "1.0.0",
-  "description": "AI Agent 驱动的多语言源码安全审计 Skill。覆盖前后端主流框架与不完整代码片段，输出与 pentestskill 视觉风格一致的 HTML 报告。",
-  "author": "code-audit-skill",
+  "description": "面向白盒源码安全审计的 AI Agent Skill，开发者 Cr1m3rA。覆盖 Java / Spring / Python / PHP / Node.js / Go / Ruby / C# / .NET / Vue / React / Angular 等主流前后端框架以及不完整代码片段，通过步进式读取 + sink/source 模式匹配 + LLM 可达性推理，输出单文件 HTML 审计报告。当前版本为单体白盒审计，黑盒联动处于待开发状态。",
+  "author": "Cr1m3rA",
   "license": "Authorized-Testing-Only",
   "entry": "SKILL.md",
   "framework_compatibility": [
@@ -129,7 +129,14 @@
     "html_reporting": true,
     "owasp_mapping": true,
     "cwe_mapping": true,
-    "cvss_scoring": true,
-    "pentestskill_integration": true
+    "cvss_scoring": true
+  },
+  "future_capabilities": {
+    "blackbox_integration": {
+      "status": "planned",
+      "description": "与配套的渗透测试方向 Skill 联动，由本 Skill 产出 finding 中的 url_or_path / method / parameter 字段，移交黑盒层做 PoC 验证。",
+      "depends_on": "配套 Skill 尚未发布",
+      "scripts": ["scripts/extract_for_blackbox.py"]
+    }
   }
 }

@@ -1,23 +1,26 @@
 # 05 — HTML 审计报告
 
-> 视觉与 `pentestskill` 的 `pentest-report.html` **完全一致**：同一调色板、同一徽章、同一样式系统、同一图表库。
-> 目的：白盒（code-audit）+ 黑盒（pentest）两份报告可并排归档、合并、对比。
+> 本节定义 VioletEyes 产出的 `code-audit-report.html` 的结构、占位符与渲染规范。
 
-## 5.1 视觉一致性保证
+## 5.1 视觉规范
 
-| 维度 | pentestskill | code-audit-skill | 一致性 |
-|---|---|---|---|
-| 主色 | `#1a73e8` | `#1a73e8` | ✓ |
-| 严重度色 | `#dc3545`/`#fd7e14`/`#ffc107`/`#17a2b8`/`#6c757d` | 同 | ✓ |
-| 字体栈 | -apple-system / PingFang SC / 微软雅黑 | 同 | ✓ |
-| 代码字体 | JetBrains Mono / Fira Code / Consolas | 同 | ✓ |
-| 图表 | Chart.js 4.4.0 | 同 | ✓ |
-| 代码高亮 | Prism.js 1.29.0 | 同 | ✓ |
-| 暗色模式 | `prefers-color-scheme: dark` | 同 | ✓ |
-| 卡片布局 | finding-card + 4px 左色条 | 同 | ✓ |
-| 打印 | A4 + 11pt + page-break-inside: avoid | 同 | ✓ |
+报告为单文件 HTML，自包含样式与脚本（Chart.js 4.4.0 + Prism.js 1.29.0）。
+整体配色与排版参考了主流安全报告的视觉语言：
 
-## 5.2 报告结构（与 pentestskill 镜像）
+| 维度 | 取值 |
+|---|---|
+| 主色 | `#1a73e8` |
+| 严重度色 | `#dc3545` / `#fd7e14` / `#ffc107` / `#17a2b8` / `#6c757d`（Critical → Informational） |
+| 字体栈 | `-apple-system` / `PingFang SC` / `微软雅黑` |
+| 代码字体 | `JetBrains Mono` / `Fira Code` / `Consolas` |
+| 暗色模式 | 跟随 `prefers-color-scheme: dark` |
+| 卡片布局 | `finding-card` + 4px 左侧色条 |
+| 打印 | A4 + 11pt + `page-break-inside: avoid` |
+
+> 备注：与配套黑盒方向 Skill 的报告字段命名保持兼容，便于将来合并归档。
+> 该 Skill 当前处于待开发状态，因此目前不存在"两份报告并排"的合并场景。
+
+## 5.2 报告结构
 
 ```
 1. Cover（封面）
@@ -26,14 +29,14 @@
    - 目标范围（仓库路径 / Git URL / "代码片段"）
    - 漏洞统计 + 风险分布
    - 漏洞类型分布
-   - 测试方法论（PTES 7 阶段 + 静态分析扩展）
+   - 测试方法论
 
 2. Executive Summary
    - LLM 生成 1 段总结
    - 风险 × 数量 表格
    - 关键发现 Top 5
 
-3. 框架画像（新增，code-audit-skill 专属）
+3. 框架画像（VioletEyes 专属）
    - 识别出的语言 / 框架 / 入口
    - 路由表（HTTP 入口）
    - 第三方依赖风险
@@ -42,12 +45,12 @@
    - 每个 finding 一个 <section id="FND-0001" class="finding severity-High">
    - 子内容：
      a. 标题 + 严重度徽章
-     b. 文件位置（file_path:line） ← 黑盒报告无
+     b. 文件位置（file_path:line）
      c. 描述
      d. 影响
-     e. 调用链（call_chain 数组） ← 黑盒报告无
+     e. 调用链（call_chain 数组）
      f. vulnerable code 片段（带行号）
-     g. 修复前 / 修复后 代码对比 ← 黑盒报告较少
+     g. 修复前 / 修复后 代码对比
      h. PoC（curl / 代码片段）
      i. OWASP / CWE 分类
      j. 元数据：发现时间、文件、参数
@@ -86,7 +89,7 @@
 {{COVERAGE}}            实际审计文件数 / 估计总文件数
 ```
 
-## 5.4 finding 渲染（与 pentestskill 对齐）
+## 5.4 finding 渲染
 
 ```html
 <section id="FND-0001" class="finding severity-High">
@@ -99,7 +102,7 @@
         <span class="badge cwe">CWE-89</span>
         <span class="badge owasp">A03:2021</span>
     </header>
-    
+
     <div class="finding-meta">
         <span class="label">文件:</span><code>src/main/java/com/x/UserController.java:42</code>
         <span class="label">函数:</span><code>UserController.getUser</code>
@@ -107,41 +110,41 @@
         <span class="label">参数:</span><code>id</code>
         <span class="label">语言/框架:</span><code>Java / Spring Boot 2.7</code>
     </div>
-    
+
     <h4>📋 描述</h4>
     <p>...</p>
-    
+
     <h4>💥 影响</h4>
     <p>...</p>
-    
+
     <h4>🔗 调用链</h4>
     <pre><code class="language-yaml">UserController.getUser(@PathVariable Long id)        # line 42
   └─ userService.findById(id)                          # line 18
       └─ userRepository.findById(id)                   # line 12
           └─ JPA: createQuery("SELECT u FROM User u WHERE u.id = " + id)  # line 8  ← 漏洞</code></pre>
-    
+
     <h4>📝 vulnerable code</h4>
     <pre><code class="language-java">// UserController.java:42-46
 @GetMapping("/user/{id}")
 public User getUser(@PathVariable Long id) {
     return userService.findById(id);   // id 直接透传至 JPA
 }</code></pre>
-    
+
     <h4>🔧 修复建议</h4>
     <h5>Before</h5>
     <pre><code class="language-java">// UserRepository.java:8
 @Query("SELECT u FROM User u WHERE u.id = " + id)
 User findById(@Param("id") Long id);</code></pre>
-    
+
     <h5>After</h5>
     <pre><code class="language-java">// UserRepository.java:8
 @Query("SELECT u FROM User u WHERE u.id = :id")
 User findById(@Param("id") Long id);</code></pre>
-    
+
     <h4>🛠️ PoC（仅作验证用）</h4>
     <pre><code class="language-bash">curl -X GET 'https://target/api/user/1%20OR%201%3D1' \
   -H 'Authorization: Bearer &lt;token&gt;'</code></pre>
-    
+
     <h4>📚 参考</h4>
     <ul>
         <li><a href="https://owasp.org/Top10/A03_2021-Injection/">OWASP A03:2021 - Injection</a></li>
@@ -160,14 +163,14 @@ User findById(@Param("id") Long id);</code></pre>
 - 强调"白盒确认"标记：`snippet_mode=true` / `confidence ≤ Medium`
 - 顶部 banner：`⚠️ 代码片段审计 — 仅基于片段内容，缺调用链上下文`
 
-## 5.6 脱敏规则（与 pentestskill 一致）
+## 5.6 脱敏规则
 
 1. 不展示完整 Authorization / Cookie / Token / API Key（前 6 + `***` + 末 4）
 2. 不展示真实 IP（10.x / 192.168.x / 172.16-31.x / 内部域名 → `<internal>`）
 3. 不展示真实用户名 / 邮箱 / 手机号
 4. 代码片段 ≤ 30 行；超长只保留 sink ± 15 行
 5. 修复建议代码片段不带任何用户数据
-6. 报告不含 `git diff` 中可能含的密钥（被 0day 审计员认为是次要信息泄漏 → 升级为单独 finding）
+6. 报告不含 `git diff` 中可能含的密钥
 
 ## 5.7 自检清单
 
@@ -183,4 +186,3 @@ User findById(@Param("id") Long id);</code></pre>
 - [ ] 免责声明完整
 - [ ] 报告 HTML 校验通过
 - [ ] token 预算未超限（若超，标 partial=true）
-- [ ] 视觉风格与 pentestskill 对齐（同色系、同字体、同图表）
