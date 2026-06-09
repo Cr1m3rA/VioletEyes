@@ -1,0 +1,112 @@
+{
+  "skills": [
+    {
+      "name": "code-audit-skill",
+      "path": "./",
+      "autoLoad": true,
+      "mcp": [],
+      "preferredMcp": null,
+      "fallbackMcp": null,
+      "relatedSkills": ["pentestskill"]
+    }
+  ],
+  "permissions": {
+    "bash": {
+      "allow": [
+        "python3 scripts/*.py",
+        "python3 -c *",
+        "git diff *",
+        "git log *",
+        "find * -not -path '*/node_modules/*' -not -path '*/target/*' -not -path '*/.git/*'",
+        "ls -la *",
+        "ls -R *",
+        "head -n 100 *",
+        "wc -l *"
+      ],
+      "deny": [
+        "rm -rf *",
+        "dd *",
+        "mkfs *",
+        "shutdown *",
+        "reboot *",
+        "curl -X POST *",
+        "wget *"
+      ]
+    },
+    "file": {
+      "allow": [
+        "Read:./findings.json",
+        "Read:./assets.json",
+        "Read:./framework_profile.json",
+        "Read:./execution.log",
+        "Read:./tree.json",
+        "Read:./routes.json",
+        "Read:./templates/**",
+        "Read:./docs/**",
+        "Read:./workflows/**",
+        "Read:./signatures/**",
+        "Read:./payloads/**",
+        "Read:./examples/**",
+        "Read:./scripts/**",
+        "Read:<source>/**",
+        "Write:./findings.json",
+        "Write:./assets.json",
+        "Write:./framework_profile.json",
+        "Write:./execution.log",
+        "Write:./code-audit-report.html",
+        "Write:./tree.json",
+        "Write:./routes.json"
+      ]
+    }
+  },
+  "mcpServers": {},
+  "agent": {
+    "model": "claude-opus-4-8",
+    "max_tokens": 16384,
+    "temperature": 0.2,
+    "system_prompt_file": "./system-prompt.md"
+  },
+  "codeauditskill": {
+    "token_budget": {
+      "default": 200000,
+      "snippet_mode": 50000,
+      "frontend_focused": 120000
+    },
+    "max_findings": 100,
+    "default_severity_floor": "low",
+    "report": {
+      "path": "./code-audit-report.html",
+      "template": "./templates/report.html"
+    },
+    "auto_invoke_scripts": {
+      "framework_detect": "python3 scripts/framework_detect.py <root>",
+      "tree_index": "python3 scripts/tree_index.py <root> --depth 3",
+      "sink_detect": "python3 scripts/sink_detect.py <file> --json",
+      "render_report": "python3 scripts/render_report.py --findings findings.json --assets assets.json --profile framework_profile.json --execution-log execution.log --output code-audit-report.html"
+    },
+    "snippet_mode": {
+      "auto_detect_languages": true,
+      "confidence_ceiling": "Medium",
+      "require_human_review": true
+    },
+    "incremental_mode": {
+      "auto_git_diff": true,
+      "default_base": "HEAD~1",
+      "default_head": "HEAD"
+    },
+    "pentestskill_integration": {
+      "enabled": true,
+      "extract_command": "python3 scripts/extract_for_pentest.py code-audit-report.html",
+      "field_mapping": {
+        "url": "url_or_path",
+        "method": "method",
+        "param": "parameter"
+      }
+    },
+    "degradation": {
+      "log_prefix": "[DEGRADED:",
+      "report_section": "审计降级说明",
+      "warn_on_partial": true
+    }
+  }
+}

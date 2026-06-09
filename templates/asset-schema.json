@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://code-audit-skill/schemas/asset.json",
+  "title": "CodeAuditSkill Asset",
+  "description": "Single code asset (HTTP entry, component, module) audited by CodeAuditSkill. Aligned with pentestskill where overlapping, with code-audit specific additions (language, framework, call_site).",
+  "type": "object",
+  "required": ["id", "type", "language", "file_path"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^AST-[0-9]{4,}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "http_api",
+        "graphql_endpoint",
+        "grpc_service",
+        "websocket_endpoint",
+        "cli_command",
+        "scheduled_task",
+        "message_consumer",
+        "controller",
+        "router",
+        "handler",
+        "middleware",
+        "model",
+        "service",
+        "repository",
+        "component",
+        "page",
+        "view",
+        "config",
+        "manifest",
+        "library",
+        "snippet"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "enum": ["java", "kotlin", "scala", "groovy",
+               "python", "php", "javascript", "typescript",
+               "go", "ruby", "csharp", "rust",
+               "vue", "react", "angular", "svelte",
+               "html", "css", "sql",
+               "yaml", "json", "toml", "ini", "plaintext"]
+    },
+    "framework": { "type": "string" },
+
+    "file_path": { "type": "string" },
+    "file_line": { "type": "integer", "minimum": 1 },
+    "class_or_route": { "type": "string" },
+
+    "method": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "WS", "GRAPHQL"]
+      }
+    },
+    "url_or_path": { "type": "string" },
+
+    "path_params": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "annotation": { "type": "string" }
+        }
+      }
+    },
+    "query_params": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "sensitivity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          }
+        }
+      }
+    },
+    "body_params": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "required": { "type": "boolean" }
+        }
+      }
+    },
+
+    "auth_required": { "type": "boolean" },
+    "auth_mechanism": { "type": "string" },
+    "auth_granularity": {
+      "type": "string",
+      "enum": ["anonymous", "authenticated_only", "role_based", "owner_checked", "unknown"]
+    },
+
+    "uses_dangerous_sink": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "eval", "exec", "system", "popen", "subprocess",
+          "pickle", "unserialize", "yaml.load", "ObjectInputStream",
+          "innerHTML", "v-html", "dangerouslySetInnerHTML",
+          "document.write", "setTimeout-str", "execSync",
+          "Runtime.exec", "ProcessBuilder",
+          "new URL", "RestTemplate", "WebClient", "HttpClient",
+          "fetch", "axios", "requests", "urlopen", "http.Get",
+          "include", "require", "fs.readFile", "open",
+          "render_template_string", "TemplateEngine.process",
+          "OGNL.evaluate", "SpelExpressionParser", "El.evaluate",
+          "Statement.executeQuery", "executeRaw", "raw()",
+          "sendRedirect", "setHeader", "response.write"
+        ]
+      }
+    },
+    "uses_external_input": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "request.body", "request.query", "request.params", "request.headers",
+          "request.cookies", "request.json", "req.body", "req.params",
+          "req.query", "req.headers", "req.cookies",
+          "params", "args", "argv",
+          "stdin", "env", "config", "file",
+          "MessageBody", "MessageEvent", "Context.Body"
+        ]
+      }
+    },
+    "uses_safe_practices": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "PreparedStatement", "NamedParameter", "ParameterizedQuery",
+          "htmlspecialchars", "html.escape", "encodeURIComponent",
+          "DOMPurify", "JSON.stringify", "html/template",
+          "Blade {{ }}", "Twig {{ }} auto-escape", "Razor @ auto-escape",
+          "@PreAuthorize", "@RolesAllowed", "AuthorizeFilter",
+          "Authorization", "UseGuards", "login_required",
+          "Joi.validation", "class-validator", "pydantic"
+        ]
+      }
+    },
+
+    "call_site": {
+      "type": "string",
+      "description": "Where this asset is invoked from, e.g. 'UserController.getUser'"
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
+    "discovered_via": {
+      "type": "string",
+      "enum": ["manifest", "scanner", "framework-default", "annotation-scan", "route-scan", "import-trace", "snippet"]
+    },
+
+    "first_seen": { "type": "string", "format": "date-time" },
+    "last_seen": { "type": "string", "format": "date-time" },
+    "tested": { "type": "boolean" },
+    "tests_run": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "findings_count": { "type": "integer", "minimum": 0 }
+  }
+}

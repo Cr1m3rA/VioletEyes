@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{PROJECT_NAME}} — 源码审计报告</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Prism.js 代码高亮 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-http.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-yaml.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-php.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-go.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-ruby.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup-templating.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
+
+<style>
+  /* ============================================================
+     CodeAuditSkill 报告样式（与 pentestskill 视觉对齐）
+     ============================================================ */
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #eef0f3;
+    --fg: #1f2937;
+    --fg-secondary: #6b7280;
+    --fg-muted: #9ca3af;
+    --border: #e5e7eb;
+    --primary: #1a73e8;
+    --primary-dark: #1557b0;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+
+    --sev-critical: #dc3545;
+    --sev-high:     #fd7e14;
+    --sev-medium:   #ffc107;
+    --sev-low:      #17a2b8;
+    --sev-info:     #6c757d;
+
+    --code-audit-accent: #9333ea;   /* code-audit-skill 主题色（与 pentest 区分） */
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1419;
+      --bg-secondary: #1a1f26;
+      --bg-tertiary: #252b33;
+      --fg: #e6e8eb;
+      --fg-secondary: #9ba1ab;
+      --fg-muted: #6c727a;
+      --border: #2a3038;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* === 顶部导航 === */
+  nav.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    backdrop-filter: blur(10px);
+  }
+  nav.topbar h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--code-audit-accent);
+  }
+  nav.topbar .meta {
+    font-size: 0.85rem;
+    color: var(--fg-secondary);
+    margin-top: 0.25rem;
+  }
+  nav.topbar .mode-badge {
+    display: inline-block;
+    background: var(--code-audit-accent);
+    color: white;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+
+  /* === 主容器 === */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* === Section 通用 === */
+  section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+  }
+  section h2 {
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--code-audit-accent);
+    color: var(--fg);
+  }
+  section h3 {
+    color: var(--fg);
+    margin-top: 1.5rem;
+  }
+  section h4 {
+    color: var(--fg-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  /* === 封面 === */
+  .cover {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #9333ea 0%, #5b21b6 100%);
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+  .cover h1 {
+    font-size: 2.5rem;
+    margin: 0 0 1rem;
+  }
+  .cover .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+  }
+  .cover .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+  .cover .meta-grid .item {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 6px;
+  }
+  .cover .meta-grid .label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+  .cover .meta-grid .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+
+  /* === 统计卡片 === */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 6px;
+    padding: 1.25rem;
+    box-shadow: var(--card-shadow);
+  }
+  .stat-card .label {
+    font-size: 0.85rem;
+    color: var(--fg-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .stat-card .value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--fg);
+    margin-top: 0.5rem;
+  }
+  .stat-card.critical { border-left-color: var(--sev-critical); }
+  .stat-card.critical .value { color: var(--sev-critical); }
+  .stat-card.high { border-left-color: var(--sev-high); }
+  .stat-card.high .value { color: var(--sev-high); }
+  .stat-card.medium { border-left-color: var(--sev-medium); }
+  .stat-card.medium .value { color: var(--sev-medium); }
+  .stat-card.low { border-left-color: var(--sev-low); }
+  .stat-card.low .value { color: var(--sev-low); }
+  .stat-card.info { border-left-color: var(--sev-info); }
+  .stat-card.info .value { color: var(--sev-info); }
+
+  /* === 图表 === */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 768px) {
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+  .chart-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+  }
+  .chart-card h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: var(--fg-secondary);
+  }
+  .chart-card canvas {
+    max-height: 280px;
+  }
+
+  /* === 漏洞卡片 === */
+  .finding {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--sev-info);
+    border-radius: 8px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
+    page-break-inside: avoid;
+  }
+  .finding.severity-Critical { border-left-color: var(--sev-critical); }
+  .finding.severity-High     { border-left-color: var(--sev-high); }
+  .finding.severity-Medium   { border-left-color: var(--sev-medium); }
+  .finding.severity-Low      { border-left-color: var(--sev-low); }
+  .finding.severity-Informational { border-left-color: var(--sev-info); }
+
+  .finding-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .finding-header h3 {
+    flex: 1 1 300px;
+    margin: 0;
+    font-size: 1.25rem;
+  }
+  .finding-header .id {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 0.9rem;
+    color: var(--fg-muted);
+  }
+
+  /* === 徽章 === */
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+  }
+  .badge.severity-Critical { background: var(--sev-critical); }
+  .badge.severity-High     { background: var(--sev-high); color: white; }
+  .badge.severity-Medium   { background: var(--sev-medium); color: black; }
+  .badge.severity-Low      { background: var(--sev-low); }
+  .badge.severity-Info,
+  .badge.severity-Informational { background: var(--sev-info); }
+  .badge.cvss { background: var(--primary); }
+  .badge.confidence { background: #6f42c1; }
+  .badge.owasp { background: #20c997; }
+  .badge.cwe { background: #fd7e14; }
+  .badge.exploitability { background: #d63384; }
+  .badge.impact { background: #0dcaf0; color: black; }
+  .badge.language { background: #495057; }
+  .badge.framework { background: var(--code-audit-accent); }
+
+  /* === Meta 信息 === */
+  .finding-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.5rem 1rem;
+    background: var(--bg-tertiary);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  .finding-meta .label {
+    color: var(--fg-secondary);
+  }
+  .finding-meta code {
+    background: var(--bg);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 0.8rem;
+  }
+
+  /* === 代码块 === */
+  pre[class*="language-"] {
+    margin: 0.5rem 0 1.5rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    max-height: 400px;
+    overflow: auto;
+  }
+  pre[class*="language-"]::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+  pre[class*="language-"]::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+  }
+
+  /* === 复现步骤 === */
+  ol.repro-steps {
+    background: var(--bg-tertiary);
+    padding: 1rem 1rem 1rem 2.5rem;
+    border-radius: 4px;
+    border-left: 3px solid var(--primary);
+  }
+  ol.repro-steps li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* === 表格 === */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+    color: var(--fg-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+  }
+  tbody tr:hover {
+    background: var(--bg-tertiary);
+  }
+
+  /* === 可折叠 === */
+  details {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
+  }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--fg-secondary);
+  }
+  details[open] summary {
+    margin-bottom: 0.5rem;
+  }
+
+  /* === 流程图 === */
+  .workflow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  .workflow .step {
+    background: var(--code-audit-accent);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  .workflow .arrow {
+    align-self: center;
+    color: var(--fg-muted);
+  }
+
+  /* === 框架画像 === */
+  .framework-profile {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .framework-profile .item {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+  }
+  .framework-profile .label {
+    font-size: 0.75rem;
+    color: var(--fg-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .framework-profile .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--fg);
+    margin-top: 0.25rem;
+  }
+
+  /* === Banner (partial / snippet) === */
+  .banner {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    color: #856404;
+  }
+  @media (prefers-color-scheme: dark) {
+    .banner {
+      background: #3a2e0a;
+      border-color: #5a4810;
+      color: #ffd84a;
+    }
+  }
+
+  /* === 打印 === */
+  @media print {
+    body { font-size: 11pt; }
+    nav.topbar, .no-print { display: none; }
+    section, .finding {
+      box-shadow: none;
+      border: 1px solid #ccc;
+      page-break-inside: avoid;
+    }
+    .charts-grid { grid-template-columns: 1fr 1fr; }
+    pre[class*="language-"] {
+      max-height: none;
+      overflow: visible;
+    }
+  }
+
+  /* === 页脚 === */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+  }
+  footer .disclaimer {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    text-align: left;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- ====================== 顶部导航 ====================== -->
+<nav class="topbar">
+  <h1>🔍 {{PROJECT_NAME}} — 源码审计报告 <span class="mode-badge">{{MODE}}</span></h1>
+  <div class="meta">
+    报告生成时间: {{REPORT_DATE}} |
+    审计时间: {{TEST_DATE_START}} ~ {{TEST_DATE_END}} |
+    目标: <code>{{TARGET}}</code>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ====================== 封面 ====================== -->
+  <section class="cover">
+    <h1>源码审计报告</h1>
+    <div class="subtitle">{{PROJECT_NAME}}</div>
+    <div class="meta-grid">
+      <div class="item">
+        <div class="label">审计时间</div>
+        <div class="value">{{TEST_DATE_START}}<br>~ {{TEST_DATE_END}}</div>
+      </div>
+      <div class="item">
+        <div class="label">目标</div>
+        <div class="value">{{TARGET}}</div>
+      </div>
+      <div class="item">
+        <div class="label">审计模式</div>
+        <div class="value">{{MODE}}</div>
+      </div>
+      <div class="item">
+        <div class="label">主要语言</div>
+        <div class="value">{{PRIMARY_LANGUAGE}}</div>
+      </div>
+      <div class="item">
+        <div class="label">漏洞总数</div>
+        <div class="value">{{FINDINGS_COUNT}}</div>
+      </div>
+      <div class="item">
+        <div class="label">代码资产</div>
+        <div class="value">{{TESTED_ASSETS}} / {{TOTAL_ASSETS}}</div>
+      </div>
+      <div class="item">
+        <div class="label">审计覆盖率</div>
+        <div class="value">{{COVERAGE_PCT}}%</div>
+      </div>
+    </div>
+  </section>
+
+  {{BANNER_PARTIAL}}
+  {{BANNER_SNIPPET}}
+
+  <!-- ====================== 1. 漏洞统计 ====================== -->
+  <section>
+    <h2>1. 漏洞统计</h2>
+
+    <div class="stats-grid">
+      <div class="stat-card critical">
+        <div class="label">Critical</div>
+        <div class="value">{{COUNT_CRITICAL}}</div>
+      </div>
+      <div class="stat-card high">
+        <div class="label">High</div>
+        <div class="value">{{COUNT_HIGH}}</div>
+      </div>
+      <div class="stat-card medium">
+        <div class="label">Medium</div>
+        <div class="value">{{COUNT_MEDIUM}}</div>
+      </div>
+      <div class="stat-card low">
+        <div class="label">Low</div>
+        <div class="value">{{COUNT_LOW}}</div>
+      </div>
+      <div class="stat-card info">
+        <div class="label">Info</div>
+        <div class="value">{{COUNT_INFO}}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">审计覆盖率</div>
+        <div class="value">{{COVERAGE_PCT}}%</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>📊 风险等级分布</h3>
+        <canvas id="severityChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>📈 漏洞类型分布 (Top 10)</h3>
+        <canvas id="classChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 2. Executive Summary ====================== -->
+  <section>
+    <h2>2. 摘要 (Executive Summary)</h2>
+    <div id="executive-summary">
+      {{EXECUTIVE_SUMMARY}}
+    </div>
+
+    <h3>🔍 关键发现 Top 5</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>标题</th>
+          <th>等级</th>
+          <th>CVSS</th>
+          <th>文件位置</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{TOP_FINDINGS_TABLE}}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ====================== 3. 框架画像 ====================== -->
+  <section>
+    <h2>3. 框架画像</h2>
+    <p>Agent 在审计前自动识别了以下语言 / 框架特征：</p>
+
+    <div class="framework-profile">
+      <div class="item">
+        <div class="label">主语言</div>
+        <div class="value">{{PRIMARY_LANGUAGE}}</div>
+      </div>
+      <div class="item">
+        <div class="label">框架</div>
+        <div class="value">{{FRAMEWORKS}}</div>
+      </div>
+      <div class="item">
+        <div class="label">构建工具</div>
+        <div class="value">{{BUILD_TOOL}}</div>
+      </div>
+      <div class="item">
+        <div class="label">入口文件</div>
+        <div class="value">{{ENTRY_FILE}}</div>
+      </div>
+      <div class="item">
+        <div class="label">HTTP 入口数</div>
+        <div class="value">{{ROUTES_COUNT}}</div>
+      </div>
+      <div class="item">
+        <div class="label">第三方依赖</div>
+        <div class="value">{{DEPS_COUNT}}</div>
+      </div>
+    </div>
+
+    <h3>3.1 路由表（HTTP 入口）</h3>
+    <details open>
+      <summary>点击展开（共 {{ROUTES_COUNT}} 个路由）</summary>
+      <table>
+        <thead>
+          <tr>
+            <th>方法</th>
+            <th>路径</th>
+            <th>处理器</th>
+            <th>文件位置</th>
+            <th>鉴权</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ROUTES_TABLE}}
+        </tbody>
+      </table>
+    </details>
+
+    <h3>3.2 危险依赖（已知 CVE）</h3>
+    <details>
+      <summary>点击展开（共 {{DEPS_RISK_COUNT}} 个高危依赖）</summary>
+      <table>
+        <thead>
+          <tr>
+            <th>依赖</th>
+            <th>版本</th>
+            <th>CVE</th>
+            <th>等级</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{DEPS_RISK_TABLE}}
+        </tbody>
+      </table>
+    </details>
+  </section>
+
+  <!-- ====================== 4. 测试方法论 ====================== -->
+  <section>
+    <h2>4. 测试方法论</h2>
+    <p>本 Skill 的审计流程遵循 <strong>5 阶段模型</strong>，结合 <strong>OWASP Testing Guide v4.2</strong> 与 <strong>OWASP Top 10 (2021)</strong>：</p>
+    <div class="workflow">
+      <span class="step">1. 侦察 (Recon)</span><span class="arrow">→</span>
+      <span class="step">2. 入口定位 (Entry Discovery)</span><span class="arrow">→</span>
+      <span class="step">3. 步进式读取</span><span class="arrow">→</span>
+      <span class="step">4. LLM 静态分析</span><span class="arrow">→</span>
+      <span class="step">5. 报告</span>
+    </div>
+
+    <h3>覆盖范围</h3>
+    <ul>
+      <li><strong>OWASP Top 10 (2021)</strong>：A01~A10 全覆盖</li>
+      <li><strong>OWASP API Security Top 10 (2023)</strong>：API1~API10 全覆盖</li>
+      <li><strong>漏洞类型</strong>：注入、越权、认证、SSRF、反序列化、业务逻辑、配置等 30+ 类</li>
+      <li><strong>语言支持</strong>：Java / Python / PHP / JavaScript / TypeScript / Go / Ruby / C# / Rust / Vue / React / Angular / Svelte + SQL / YAML / JSON 配置</li>
+      <li><strong>审计模式</strong>：{{MODE}}</li>
+      <li><strong>工具</strong>：CodeAuditSkill Agent（LLM 推理） + 可选 semgrep / codeql 加速</li>
+    </ul>
+  </section>
+
+  <!-- ====================== 5. 漏洞详情 ====================== -->
+  <section>
+    <h2>5. 漏洞详情</h2>
+    <p>本次审计共发现 <strong>{{FINDINGS_COUNT}}</strong> 个漏洞，详情如下：</p>
+
+    <!-- 目录 -->
+    <details>
+      <summary>📑 漏洞目录</summary>
+      <ol>
+        {{FINDINGS_TOC}}
+      </ol>
+    </details>
+
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+
+    {{FINDINGS_LIST}}
+  </section>
+
+  <!-- ====================== 6. 附录 ====================== -->
+  <section>
+    <h2>6. 附录</h2>
+
+    <h3>6.1 代码资产清单（HTTP 入口）</h3>
+    <details>
+      <summary>点击展开（共 {{TOTAL_ASSETS}} 项资产）</summary>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>类型</th>
+            <th>语言/框架</th>
+            <th>路径</th>
+            <th>URL</th>
+            <th>鉴权</th>
+            <th>漏洞数</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ASSETS_TABLE}}
+        </tbody>
+      </table>
+    </details>
+
+    <h3>6.2 入口文件清单</h3>
+    <details>
+      <summary>点击展开</summary>
+      <table>
+        <thead>
+          <tr>
+            <th>入口</th>
+            <th>类型</th>
+            <th>文件</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ENTRY_TABLE}}
+        </tbody>
+      </table>
+    </details>
+
+    <h3>6.3 Agent 执行日志（节选）</h3>
+    <details>
+      <summary>点击展开执行日志</summary>
+      <pre><code class="language-yaml">{{EXECUTION_LOG}}</code></pre>
+    </details>
+
+    <h3>6.4 工具与版本</h3>
+    <table>
+      <thead>
+        <tr><th>工具</th><th>版本</th><th>用途</th></tr>
+      </thead>
+      <tbody>
+        {{TOOL_VERSIONS}}
+      </tbody>
+    </table>
+
+    <h3>6.5 与 pentestskill 协同说明</h3>
+    <p>本报告中的 finding 含 <code>url_or_path / method / parameter</code> 字段，可直接喂给 <code>pentestskill</code> 做黑盒 PoC 验证：</p>
+    <pre><code class="language-bash"># 提取本报告中的所有 URL 喂给 pentestskill
+python3 scripts/extract_for_pentest.py code-audit-report.html > targets.txt
+claude "请使用 pentestskill 对以下目标做验证：$(cat targets.txt)"</code></pre>
+  </section>
+
+  <!-- ====================== 7. 免责声明 ====================== -->
+  <section>
+    <h2>7. 免责声明</h2>
+    <div class="disclaimer" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 6px;">
+      <ol>
+        <li>本报告仅供授权范围内的代码审计与修复参考。</li>
+        <li>所有审计均基于 <strong>静态分析 + LLM 推理</strong>，未实际运行任何代码，未对目标造成任何修改或破坏。</li>
+        <li>本报告中的"修复建议代码"仅作参考，可能需根据实际框架版本调整。</li>
+        <li>报告中涉及的"无害 PoC"仅用于理解漏洞触发链，<strong>不可用于未授权场景</strong>。</li>
+        <li>报告中涉及的真实凭据 / 敏感数据均已脱敏（显示为 <code>***</code>）。</li>
+        <li>报告所述漏洞及风险等级基于审计时点的源码状态，业务代码 / 配置变更后风险可能变化。</li>
+        <li>LLM 推理存在漏报 / 误报可能，<strong>Critical 与 High 风险漏洞请人工复核</strong>。</li>
+        <li>任何因未授权使用本报告或相关技术造成的损失，由使用者自行承担。</li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>报告由 <strong>CodeAuditSkill Agent v1.0</strong> 自动生成 · 生成时间 {{REPORT_DATE}}</p>
+  <p>本报告遵循 <a href="https://owasp.org/" style="color: var(--code-audit-accent);">OWASP Testing Guide</a> · <a href="https://cwe.mitre.org/" style="color: var(--code-audit-accent);">CWE</a> 标准</p>
+  <p>建议与 <a href="../pentestskill/pentest-report.html" style="color: var(--code-audit-accent);">pentestskill 黑盒报告</a> 并排阅读</p>
+</footer>
+
+<!-- ====================== 图表脚本 ====================== -->
+<script>
+  // 风险等级分布
+  new Chart(document.getElementById('severityChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Critical', 'High', 'Medium', 'Low', 'Info'],
+      datasets: [{
+        data: [{{COUNT_CRITICAL}}, {{COUNT_HIGH}}, {{COUNT_MEDIUM}}, {{COUNT_LOW}}, {{COUNT_INFO}}],
+        backgroundColor: [
+          '#dc3545', '#fd7e14', '#ffc107', '#17a2b8', '#6c757d'
+        ],
+        borderWidth: 2,
+        borderColor: 'var(--bg-secondary)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.label}: ${ctx.parsed} (${((ctx.parsed / ({{COUNT_CRITICAL}} + {{COUNT_HIGH}} + {{COUNT_MEDIUM}} + {{COUNT_LOW}} + {{COUNT_INFO}}) || 1) * 100).toFixed(1)}%)`
+          }
+        }
+      }
+    }
+  });
+
+  // 漏洞类型分布
+  new Chart(document.getElementById('classChart'), {
+    type: 'bar',
+    data: {
+      labels: {{CLASS_LABELS_JSON}},
+      datasets: [{
+        label: '数量',
+        data: {{CLASS_COUNTS_JSON}},
+        backgroundColor: '#9333ea',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+
+  // Prism 高亮
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.Prism) Prism.highlightAll();
+  });
+</script>
+
+</body>
+</html>

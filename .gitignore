@@ -1,0 +1,38 @@
+# 报告产物
+code-audit-report.html
+findings.json
+assets.json
+framework_profile.json
+execution.log
+tree.json
+routes.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# 临时文件
+/tmp/
+*.tmp
+*.bak
+*.swp
+.DS_Store
+
+# 编辑器
+.vscode/
+.idea/
+*.iml
+
+# 测试输出
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# 用户输入的审计目标（不应进 git）
+/audit-targets/
+/example-projects/
