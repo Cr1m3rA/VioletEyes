@@ -1,0 +1,74 @@
+{# Appendix: assets, execution log, tool versions, blackbox note #}
+<section id="appendix" class="space-y-6">
+  <div class="flex items-center gap-2">
+    <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-violet-500 to-violet-700"></span>
+    <h2 class="text-xl font-bold tracking-tight">附录</h2>
+  </div>
+
+  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm">6.1 代码资产清单（{{ total_assets }} 项）</summary>
+    <div class="px-6 pb-6">
+      {% if assets %}
+      <table class="section-table">
+        <thead><tr><th>ID</th><th>类型</th><th>语言/框架</th><th>路径</th><th>URL</th><th>鉴权</th><th>漏洞数</th></tr></thead>
+        <tbody>
+          {% for a in assets %}
+          <tr>
+            <td class="font-mono text-xs">{{ a.id or '—' }}</td>
+            <td>{{ a.type or '—' }}</td>
+            <td class="text-xs">{{ a.language or '' }}{% if a.framework %} / {{ a.framework }}{% endif %}</td>
+            <td class="font-mono text-xs break-all">{{ a.file_path or '—' }}</td>
+            <td class="font-mono text-xs">{{ a.url_or_path or '—' }}</td>
+            <td>
+              {% if a.auth_required %}
+                <span class="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">✓ {{ a.auth_mechanism or '已鉴权' }}</span>
+              {% else %}
+                <span class="text-slate-400 text-xs">—</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% set fc = a.findings_count or 0 %}
+              {% if fc > 0 %}<span class="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-xs font-bold">{{ fc }}</span>
+              {% else %}<span class="text-slate-400 text-xs">0</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="text-sm text-slate-500 dark:text-slate-400">无代码资产（片段模式）。</p>
+      {% endif %}
+    </div>
+  </details>
+
+  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm">6.2 Agent 执行日志（节选）</summary>
+    <div class="px-6 pb-6">
+      <pre class="language-yaml"><code class="language-yaml">{{ execution_log }}</code></pre>
+    </div>
+  </details>
+
+  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm">6.3 工具与版本</summary>
+    <div class="px-6 pb-6">
+      <table class="section-table">
+        <thead><tr><th>工具</th><th>版本</th><th>用途</th></tr></thead>
+        <tbody>
+          {% for k, v in tool_versions.items() %}
+          <tr><td class="font-mono text-xs">{{ k }}</td><td class="font-mono text-xs">{{ v }}</td><td class="text-xs text-slate-600 dark:text-slate-400">{{ tool_versions_purpose.get(k, '—') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-6">
+    <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200 mb-2 flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      关于黑盒联动（待开发）
+    </h3>
+    <p class="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+      本报告中的 finding 已按与未来配套黑盒 Skill 兼容的命名约定保留 <code class="bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 rounded text-xs">url_or_path / method / parameter</code> 字段，并提供 <code class="bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 rounded text-xs">scripts/extract_for_blackbox.py</code> 作为抽取接口。配套的黑盒方向 Skill 当前处于待开发状态，本报告不会触发任何外部黑盒调用。上线后将在本节补全联动脚本与调用方式。
+    </p>
+  </div>
+</section>

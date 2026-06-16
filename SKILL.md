@@ -132,7 +132,7 @@ outputs:
 3. **步进式代码读取** — **不一次性读取整个仓库**。Agent 按目录结构、文件名与框架特征构建读队列，按依赖图展开：入口 → 路由 → 控制器 → 服务 → 仓储 → 模型 → 工具类。每个文件读完后立即评估 sink / source，再决定是否展开调用方。
 4. **漏洞挖掘** — 对每个文件依次执行：sink 模式匹配（SQL 拼接、`eval`、`exec`、`Runtime.exec`、`deserialize`、`render_template`、`fs.readFile`、JS `innerHTML`、`v-html`、`dangerouslySetInnerHTML`、Python `pickle.load`、PHP `unserialize`、Java `ObjectInputStream`、Go `exec.Command` …）→ 反向追溯 source（用户输入 / 配置 / HTTP body / 路由参数）→ LLM 语义判断可达性、净化措施、影响面 → 给出 confidence。
 5. **片段模式 (snippet mode)** — 当 `source` 是文本片段时，跳过文件树构建，直接对片段做语言检测与 sink/source 推理。
-6. **HTML 报告** — 单文件 HTML，依赖 Chart.js 与 Prism.js 做风险分布图与代码高亮，输出至 `report_path`。
+6. **HTML 报告** — 单文件 HTML，**完全离线**（Tailwind v4 / Alpine.js / Chart.js / Mermaid.js / Prism.js 全部内联），输出至 `report_path`。详见 `docs/05-html-report.md` 与 `templates/`。
 
 ## When to use
 
@@ -198,17 +198,36 @@ VioletEyes/
 │   ├── dangerous-functions.md
 │   └── dangerous-configs.md
 │
-├── templates/
-│   ├── report.html
+├── templates/                Jinja2 模板 + 内联资源
+│   ├── base.html.j2          主骨架
+│   ├── base.css              定制 CSS（print / 卡片 / call-chain 等）
+│   ├── finding.html.j2       finding 卡片
+│   ├── partials/             cover / dashboard / framework / appendix ...
+│   │   ├── cover.html.j2
+│   │   ├── summary.html.j2
+│   │   ├── dashboard.html.j2
+│   │   ├── framework.html.j2
+│   │   ├── findings_index.html.j2
+│   │   ├── appendix.html.j2
+│   │   └── disclaimer.html.j2
+│   ├── inline/               第三方 JS/CSS 内联（build_inline.py 下载）
+│   ├── archive/              历史模板归档
 │   ├── finding-schema.json
 │   └── asset-schema.json
 │
 ├── scripts/                  静态分析辅助脚本（Python）
-│   ├── render_report.py
+│   ├── render_report.py      Jinja2 渲染器（兼容 v1.0 CLI）
+│   ├── build_inline.py       下载 / 刷新 inline 资源
 │   ├── framework_detect.py
 │   ├── sink_detect.py
 │   ├── tree_index.py
 │   └── extract_for_blackbox.py    （黑盒联动接口，待开发）
+│
+├── tests/                    冒烟测试 + fixture
+│   ├── smoke_test.py         27 项断言
+│   ├── preview_server.py     本地预览 HTTP
+│   └── fixtures/             findings.json / assets.json / profile.json / execution.log
+│                              + code-audit-report.html（示例输出）
 │
 ├── examples/
 │   ├── spring-boot-audit.md

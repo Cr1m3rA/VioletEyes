@@ -1,188 +1,249 @@
 # 05 — HTML 审计报告
 
-> 本节定义 VioletEyes 产出的 `code-audit-report.html` 的结构、占位符与渲染规范。
+> 本节定义 VioletEyes 产出的 `code-audit-report.html` 的结构、视觉规范、占位符与渲染管线。
+> **v1.1 更新**：报告从手写 HTML/CSS + 字符串模板拼接，重构为 **Jinja2 模板 + 全内联前端资源**，并在浏览器侧引入 **Tailwind v4 / Alpine.js / Mermaid.js / Chart.js / Prism.js** 提升视觉与交互。
 
-## 5.1 视觉规范
+## 5.1 渲染管线（v1.1）
 
-报告为单文件 HTML，自包含样式与脚本（Chart.js 4.4.0 + Prism.js 1.29.0）。
-整体配色与排版参考了主流安全报告的视觉语言：
+```
+┌──────────────────────────────────────────────────────────────────┐
+│   Python 端（一次性）                                              │
+│                                                                  │
+│   findings.json ─┐                                                │
+│   assets.json   ─┼─► scripts/render_report.py ──► code-audit-    │
+│   profile.json  ─┤                  │                  report.html│
+│   execution.log ─┘                  ▼                             │
+│                          Jinja2 模板（templates/）                │
+│                          ├─ base.html.j2                          │
+│                          ├─ finding.html.j2                       │
+│                          └─ partials/*.html.j2                    │
+│                                                                  │
+│   模板内联：templates/inline/*  → 一次性 read_text                │
+│           （Tailwind/Alpine/Chart/Mermaid/Prism 全量）            │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│   浏览器端（运行时）                                                │
+│                                                                  │
+│   Tailwind v4  ─► JIT 编译 utility class（violet/slate/...）       │
+│   Alpine.js    ─► 折叠 / 主题切换 / 严重度过滤 / call-chain tab   │
+│   Chart.js     ─► 严重度环形图 + 漏洞类型水平柱状图                │
+│   Mermaid.js   ─► 调用链流程图（flowchart TD）                    │
+│   Prism.js     ─► 代码块语法高亮（Java/Python/JS/Go/PHP/Ruby/...）│
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**单文件交付**：所有上述 JS/CSS 在生成时已 inline 进 HTML。报告不依赖任何 CDN 或外部资源，离线 / 内网环境直接打开。
+
+**离线资源刷新**：如需升级 Tailwind / Mermaid 等版本，运行 `python scripts/build_inline.py`（一次性联网）。
+
+## 5.2 视觉规范
 
 | 维度 | 取值 |
 |---|---|
-| 主色 | `#1a73e8` |
-| 严重度色 | `#dc3545` / `#fd7e14` / `#ffc107` / `#17a2b8` / `#6c757d`（Critical → Informational） |
-| 字体栈 | `-apple-system` / `PingFang SC` / `微软雅黑` |
-| 代码字体 | `JetBrains Mono` / `Fira Code` / `Consolas` |
-| 暗色模式 | 跟随 `prefers-color-scheme: dark` |
-| 卡片布局 | `finding-card` + 4px 左侧色条 |
-| 打印 | A4 + 11pt + `page-break-inside: avoid` |
+| 主题色 | Violet 600 / 700（Tailwind 默认 `violet` 色阶） |
+| 中性色 | Slate 50–950 |
+| 严重度色 | Critical `#dc2626` / High `#ea580c` / Medium `#ca8a04` / Low `#0891b2` / Info `#64748b` |
+| 字体栈（正文） | `-apple-system` / `Segoe UI` / `PingFang SC` / `Microsoft YaHei` |
+| 字体栈（代码） | `JetBrains Mono` / `Fira Code` / `Cascadia Code` / `Consolas` |
+| 暗色模式 | `<html class="dark">` 切换，由 Alpine.js 切换按钮触发；初次加载跟随 `prefers-color-scheme` |
+| 卡片样式 | 圆角 `rounded-xl` + 微阴影 + 4px 左侧严重度色条 |
+| 打印 | A4 / `page-break-inside: avoid` / 隐藏导航与切换按钮（`@media print`） |
+| 单文件体积 | ~3.9 MB（未压缩），gzip 后约 1 MB |
 
-> 备注：与配套黑盒方向 Skill 的报告字段命名保持兼容，便于将来合并归档。
-> 该 Skill 当前处于待开发状态，因此目前不存在"两份报告并排"的合并场景。
-
-## 5.2 报告结构
+## 5.3 报告章节结构
 
 ```
-1. Cover（封面）
-   - 项目名（自动取自 manifest 顶层 / Git repo 名 / 用户输入）
-   - 报告时间、审计时间
-   - 目标范围（仓库路径 / Git URL / "代码片段"）
-   - 漏洞统计 + 风险分布
-   - 漏洞类型分布
-   - 测试方法论
+1. 顶部导航 (sticky)
+   - Logo + 版本号
+   - 锚点导航（概览 / 仪表盘 / 框架画像 / 漏洞详情 / 附录）
+   - 模式徽章 + 主题切换按钮
 
-2. Executive Summary
-   - LLM 生成 1 段总结
-   - 风险 × 数量 表格
-   - 关键发现 Top 5
+2. 封面 (cover)
+   - 项目名 / 目标 / 模式 / 测试周期 / 生成时间
+   - 漏洞总数 + 严重度分布
 
-3. 框架画像（VioletEyes 专属）
-   - 识别出的语言 / 框架 / 入口
-   - 路由表（HTTP 入口）
-   - 第三方依赖风险
+3. 执行摘要 (summary)
+   - LLM 生成总结（含 partial / snippet 警告）
+   - 关键发现 Top 5（按严重度 + CVSS 排序）
 
-4. 漏洞详情
-   - 每个 finding 一个 <section id="FND-0001" class="finding severity-High">
-   - 子内容：
-     a. 标题 + 严重度徽章
-     b. 文件位置（file_path:line）
-     c. 描述
-     d. 影响
-     e. 调用链（call_chain 数组）
-     f. vulnerable code 片段（带行号）
-     g. 修复前 / 修复后 代码对比
-     h. PoC（curl / 代码片段）
-     i. OWASP / CWE 分类
-     j. 元数据：发现时间、文件、参数
+4. 风险仪表盘 (dashboard)
+   - 5 张严重度统计卡
+   - Chart.js 环形图（严重度分布）
+   - Chart.js 水平柱状图（漏洞类型 Top 10）
+   - 覆盖率 / HTTP 入口数 / 高危依赖数
 
-5. 附录
-   - 代码资产清单（routes / controllers / 组件）
+5. 框架画像 (framework)
+   - 技术栈识别（语言 / 框架 / 构建工具 / 主入口 / HTTP 入口数）
    - 入口文件清单
-   - 第三方依赖风险清单（Log4Shell 等）
-   - Agent 执行日志
-   - 工具与版本
+   - HTTP 路由表（方法 / URL / 控制器 / 文件 / 鉴权）
+   - 高危第三方依赖表
 
-6. 免责声明
+6. 漏洞目录 (findings index)
+   - 可折叠；按序号、标题、严重度、CVSS、CWE、文件位置排列
+
+7. 漏洞详情 (findings list)
+   - 每个 finding 一张卡片：
+     a. 标题 + 严重度色条 + ID
+     b. 徽章（severity / confidence / CVSS / CWE / OWASP / 需人工复核）
+     c. Meta 信息（文件 / 类路由 / URL / 参数 / 语言 / 发现时间）
+     d. 描述 / 影响 / 攻击者能力
+     e. 调用链 — Tab 切换：
+        - 树形（高亮文本，连接线）
+        - Mermaid 流程图（flowchart TD，sink 节点红色高亮）
+     f. 漏洞代码块（Prism 高亮，文件路径标题栏）
+     g. 复现步骤
+     h. PoC（curl / Python / Java / Unit Test，按 Tab 切换）
+     i. 修复建议（Before / After 并排）
+     j. 参考链接（CWE / OWASP / CVE / NVD）
+   - 顶部严重度过滤条（All / Critical / High / Medium / Low / Info）
+
+8. 附录 (appendix)
+   - 6.1 代码资产清单
+   - 6.2 Agent 执行日志
+   - 6.3 工具与版本
+   - 6.4 关于黑盒联动（待开发）
+
+9. 免责声明 (disclaimer)
+10. 页脚
 ```
 
-## 5.3 报告占位符
+## 5.4 数据契约 / 占位符
 
-```
-{{PROJECT_NAME}}        从 manifest 顶层或 git repo 名推断
-{{REPORT_DATE}}         当前时间 (YYYY-MM-DD HH:MM)
-{{TEST_DATE_START}}     审计开始时间
-{{TEST_DATE_END}}       审计结束时间
-{{TARGET}}              仓库路径 / Git URL / "代码片段"
-{{SOURCE_TYPE}}         local | git | archive | snippet
-{{MODE}}                full | incremental | snippet | api-focused | frontend-focused | diff
-{{FRAMEWORK_PROFILE}}   HTML 表格（语言/框架/入口）
-{{ROUTES_TABLE}}        HTML 表格（路由表）
-{{DEPS_RISK_TABLE}}     HTML 表格（高危依赖）
-{{TOTAL_ASSETS}}        代码资产数
-{{FINDINGS_COUNT}}      漏洞总数
-{{COUNT_CRITICAL}} ...  按严重度计数
-{{FINDINGS_LIST}}       漏洞详情 HTML
-{{ASSETS_TABLE}}        代码资产表格
-{{EXECUTION_LOG}}       Agent 步进日志
-{{TOOL_VERSIONS}}       JSON（python、os、llm 等）
-{{PARTIAL}}             bool，超 token 预算时为 true
-{{COVERAGE}}            实际审计文件数 / 估计总文件数
-```
+模板由 `scripts/render_report.py` 渲染，输入文件：
 
-## 5.4 finding 渲染
+| 文件 | 类型 | 顶层格式 |
+|---|---|---|
+| `--findings` | JSON | `[Finding, ...]` 或 `{"findings": [Finding, ...]}` |
+| `--assets` | JSON | `[Asset, ...]` 或 `{"assets": [Asset, ...]}` |
+| `--profile` | JSON | `FrameworkProfile`（dict） |
+| `--execution-log` | 文本 | plain log |
 
-```html
-<section id="FND-0001" class="finding severity-High">
-    <header class="finding-header">
-        <span class="id">FND-0001</span>
-        <h3>UserController.getUser 存在 SQL 注入</h3>
-        <span class="badge severity-High">High</span>
-        <span class="badge confidence">Confirmed</span>
-        <span class="badge cvss">CVSS 8.1</span>
-        <span class="badge cwe">CWE-89</span>
-        <span class="badge owasp">A03:2021</span>
-    </header>
+CLI 调用与 v1.0 完全兼容，仅 `--report-template` 改为 `--template-dir`（默认 `templates/`）。
 
-    <div class="finding-meta">
-        <span class="label">文件:</span><code>src/main/java/com/x/UserController.java:42</code>
-        <span class="label">函数:</span><code>UserController.getUser</code>
-        <span class="label">URL:</span><code>GET /api/user/{id}</code>
-        <span class="label">参数:</span><code>id</code>
-        <span class="label">语言/框架:</span><code>Java / Spring Boot 2.7</code>
-    </div>
+### 模板上下文（renderer 暴露给 Jinja）
 
-    <h4>📋 描述</h4>
-    <p>...</p>
-
-    <h4>💥 影响</h4>
-    <p>...</p>
-
-    <h4>🔗 调用链</h4>
-    <pre><code class="language-yaml">UserController.getUser(@PathVariable Long id)        # line 42
-  └─ userService.findById(id)                          # line 18
-      └─ userRepository.findById(id)                   # line 12
-          └─ JPA: createQuery("SELECT u FROM User u WHERE u.id = " + id)  # line 8  ← 漏洞</code></pre>
-
-    <h4>📝 vulnerable code</h4>
-    <pre><code class="language-java">// UserController.java:42-46
-@GetMapping("/user/{id}")
-public User getUser(@PathVariable Long id) {
-    return userService.findById(id);   // id 直接透传至 JPA
-}</code></pre>
-
-    <h4>🔧 修复建议</h4>
-    <h5>Before</h5>
-    <pre><code class="language-java">// UserRepository.java:8
-@Query("SELECT u FROM User u WHERE u.id = " + id)
-User findById(@Param("id") Long id);</code></pre>
-
-    <h5>After</h5>
-    <pre><code class="language-java">// UserRepository.java:8
-@Query("SELECT u FROM User u WHERE u.id = :id")
-User findById(@Param("id") Long id);</code></pre>
-
-    <h4>🛠️ PoC（仅作验证用）</h4>
-    <pre><code class="language-bash">curl -X GET 'https://target/api/user/1%20OR%201%3D1' \
-  -H 'Authorization: Bearer &lt;token&gt;'</code></pre>
-
-    <h4>📚 参考</h4>
-    <ul>
-        <li><a href="https://owasp.org/Top10/A03_2021-Injection/">OWASP A03:2021 - Injection</a></li>
-        <li><a href="https://cwe.mitre.org/data/definitions/89.html">CWE-89</a></li>
-    </ul>
-</section>
+```python
+{
+    "version": "1.0.0",
+    "project_name": str, "target": str, "mode": str, "mode_label": str,
+    "report_date": "YYYY-MM-DD HH:MM:SS",
+    "test_date_start": str, "test_date_end": str,
+    "partial": bool, "snippet_mode": bool,
+    "primary_language": str, "frameworks": str, "build_tool": str,
+    "entry_file": str, "entry_points": [EntryPoint, ...],
+    "routes": [Asset, ...], "routes_count": int,
+    "deps_count": int, "deps_risk": [DepRisk, ...], "deps_risk_count": int,
+    "findings": [Finding, ...], "findings_count": int,
+    "counts": {"critical": int, "high": int, "medium": int, "low": int, "info": int},
+    "coverage_pct": "85.0", "tested_assets": int, "total_assets": int,
+    "severity_filters": ["All", "Critical", "High", "Medium", "Low", "Info"],
+    "top_findings": [...], "class_labels_json": str, "class_counts_json": str,
+    "executive_summary_intro": HTML 片段,
+    "assets": [Asset, ...], "execution_log": str,
+    "tool_versions": dict, "tool_versions_purpose": dict,
+    "inline": {
+        "tailwind_js": str, "alpine_js": str, "chart_js": str,
+        "mermaid_js": str, "prism_css": str, "prism_*_js": str, ...
+    },
+}
 ```
 
-## 5.5 snippet 模式特殊处理
+## 5.5 Finding 字段约定
 
-`mode=snippet` 时：
+每个 finding 在模板里是 normalized dict（renderer 会补默认值、跑脱敏、截断过长 snippet、映射 `prism_lang`）：
 
-- 封面：TARGET = `<inline code>` / SIZE = N 行
-- 省略"代码资产清单"（snippet 没有文件）
-- 漏洞详情中：`file_path=snippet` / `file_line=相对行号` / `code_snippet=片段内容`
-- 强调"白盒确认"标记：`snippet_mode=true` / `confidence ≤ Medium`
-- 顶部 banner：`⚠️ 代码片段审计 — 仅基于片段内容，缺调用链上下文`
+```python
+{
+    "id": "FND-0001",
+    "title": str,
+    "severity": "Critical" | "High" | "Medium" | "Low" | "Informational",
+    "confidence": str | None,
+    "cvss_score": float | None,
+    "cwe": ["CWE-89"] | "CWE-89" | None,
+    "owasp_2021": str | None,
+    "owasp_api_2023": str | None,
+    "language": "java" | "python" | ...,
+    "framework": str | None,
+    "vuln_class": str,
+    "file_path": str,
+    "file_line": int | None,
+    "class_or_route": str | None,
+    "url_or_path": str | None,
+    "method": str | [str, ...] | None,
+    "parameter": str | None,
+    "discovered_at": str | None,
+    "description": str,
+    "impact": str | None,
+    "business_impact": str | None,
+    "attacker_capability": str | None,
+    "call_chain": [{"symbol": str, "file": str, "line": int}, ...] | None,
+    "code_snippet": str | None,
+    "reproduction_steps": [str, ...] | None,
+    "evidence": {
+        "poc_curl": str | None,
+        "poc_python": str | None,
+        "poc_java": str | None,
+        "poc_unit_test": str | None,
+        "poc_payload": str | None,
+    } | None,
+    "remediation": {
+        "summary": str | None,
+        "code_before": str | None,
+        "code_after": str | None,
+        "reference": str | None,
+    } | None,
+    "human_review": bool | None,
+    "prism_lang": "java" | "python" | ...,  # renderer 自动填充
+}
+```
 
-## 5.6 脱敏规则
+## 5.6 snippet 模式特殊处理
 
-1. 不展示完整 Authorization / Cookie / Token / API Key（前 6 + `***` + 末 4）
-2. 不展示真实 IP（10.x / 192.168.x / 172.16-31.x / 内部域名 → `<internal>`）
-3. 不展示真实用户名 / 邮箱 / 手机号
-4. 代码片段 ≤ 30 行；超长只保留 sink ± 15 行
-5. 修复建议代码片段不带任何用户数据
-6. 报告不含 `git diff` 中可能含的密钥
+`mode=snippet` 时（`--snippet-mode`）：
 
-## 5.7 自检清单
+- 封面 TARGET 字段显示 `<inline code>` / SIZE N 行
+- 省略"代码资产清单"
+- 漏洞详情中：`file_path=snippet` / `file_line=相对行号`
+- 顶部黄色 banner：`⚠ 代码片段审计 — 仅基于片段内容，缺调用链上下文`
+- finding 卡片中无 call_chain 时整段不渲染
 
-生成报告前 Agent 必须：
+## 5.7 脱敏规则（renderer 自动应用）
 
-- [ ] 所有 finding 有 file_path + line
-- [ ] 所有 High+ 有修复建议（code_before + code_after）
-- [ ] 所有 Critical 标记 human_review=true
-- [ ] 报告中无明文凭据
+1. Bearer / Basic / Token 关键字后的长串 → 前 6 + `***` + 末 4
+2. 任意 32 字符以上的 base64-ish → 前 6 + `***` + 末 4
+3. 内网 IP（10.x / 192.168.x / 172.16-31.x）→ `<internal-ip>`
+4. code_snippet 超过 30 行 → 保留头 15 + `... (truncated) ...` + 尾 15
+
+## 5.8 自检清单
+
+生成报告前 Agent / CI 必须确认：
+
+- [ ] 所有 finding 有 `file_path` + `file_line`
+- [ ] 所有 High+ 有 `remediation.code_before` + `code_after`
+- [ ] 所有 Critical 标记 `human_review=true`
+- [ ] 报告中无明文凭据（脱敏规则生效）
 - [ ] 图表数据正确（与 findings.json 一致）
 - [ ] snippet 模式有 `snippet_mode=true` 标记
-- [ ] 增量模式有 `base_commit` / `head_commit` 标记
+- [ ] 增量模式有 `base_commit` / `head_commit` 标记（planned）
 - [ ] 免责声明完整
-- [ ] 报告 HTML 校验通过
-- [ ] token 预算未超限（若超，标 partial=true）
+- [ ] 报告 HTML 通过 `tests/smoke_test.py`（27/27 断言）
+- [ ] 无 `cdn.jsdelivr.net` / `unpkg.com` 等外部资源引用（单文件离线）
+- [ ] 单文件大小 < 6 MB（当前 fixture 实测 3.9 MB）
+
+## 5.9 自定义与扩展
+
+如需修改报告外观：
+
+- **改模板**：直接编辑 `templates/base.html.j2` / `templates/partials/*.html.j2` / `templates/finding.html.j2`
+- **改 CSS**：Tailwind utility 写在模板里；少量自定义组件写在 `templates/base.css`
+- **改内联资源**：编辑 `scripts/build_inline.py` 的 `ASSETS` dict，然后 `python scripts/build_inline.py --force` 重下
+- **添加 finding 字段**：编辑 `scripts/render_report.py` 的 `normalize_finding()`，以及对应模板中的引用
+- **更换图标**：模板中所有 inline SVG（heroicons 风格）可直接替换
+
+## 5.10 历史
+
+| 版本 | 日期 | 关键变更 |
+|---|---|---|
+| v1.0 | - | 初始版：手写 HTML/CSS + `template.replace()` 字符串模板 |
+| v1.1 | 2026-06-16 | Jinja2 模板化；Tailwind v4 + Alpine.js + Chart.js + Mermaid.js + Prism.js 全内联；新增严重度过滤 / 主题切换 / call-chain tab；重构 renderer；新增 `build_inline.py` 与 `tests/smoke_test.py` |

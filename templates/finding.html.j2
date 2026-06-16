@@ -1,0 +1,217 @@
+{# Single finding card — accepts a finding dict in `f` #}
+{% set sev = f.severity or 'Informational' %}
+<article id="{{ f.id }}" class="finding bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
+                                rounded-xl pl-7 pr-6 py-6 shadow-sm hover:shadow-md transition-shadow"
+         data-severity="{{ sev }}">
+
+  <header class="flex flex-wrap items-start gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+    <span class="flex-shrink-0 w-9 h-9 rounded-lg grid place-items-center font-bold text-sm text-white
+      {% if sev == 'Critical' %}bg-rose-600
+      {% elif sev == 'High' %}bg-orange-500
+      {% elif sev == 'Medium' %}bg-amber-500
+      {% elif sev == 'Low' %}bg-cyan-600
+      {% else %}bg-slate-500{% endif %}">{{ sev[0] }}</span>
+
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 text-xs font-mono text-slate-400 mb-1">
+        <span>{{ f.id }}</span>
+        {% if f.vuln_class %}<span>·</span><span>{{ f.vuln_class }}</span>{% endif %}
+        {% if f.framework %}<span>·</span><span>{{ f.framework }}</span>{% endif %}
+      </div>
+      <h3 class="text-lg font-semibold leading-snug text-slate-900 dark:text-slate-100">{{ f.title }}</h3>
+    </div>
+
+    <div class="flex flex-wrap gap-1.5 items-start">
+      <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide
+        {% if sev == 'Critical' %}bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300
+        {% elif sev == 'High' %}bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300
+        {% elif sev == 'Medium' %}bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300
+        {% elif sev == 'Low' %}bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300
+        {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">{{ sev }}</span>
+      {% if f.confidence %}<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">{{ f.confidence }}</span>{% endif %}
+      {% if f.cvss_score is number %}<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">CVSS {{ f.cvss_score }}</span>{% endif %}
+      {% if f.cwe %}<span class="px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{{ f.cwe[0] if f.cwe is iterable and f.cwe is not string else f.cwe }}</span>{% endif %}
+      {% if f.owasp_2021 %}<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">{{ f.owasp_2021 }}</span>{% endif %}
+      {% if f.human_review %}<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-300 text-yellow-900">⚠ 需人工复核</span>{% endif %}
+    </div>
+  </header>
+
+  {# Meta info row #}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1.5 py-3 text-xs">
+    {% if f.file_path %}<div><span class="text-slate-500 dark:text-slate-400">文件：</span><code>{{ f.file_path }}{% if f.file_line %}:{{ f.file_line }}{% endif %}</code></div>{% endif %}
+    {% if f.class_or_route %}<div><span class="text-slate-500 dark:text-slate-400">类/路由：</span><code>{{ f.class_or_route }}</code></div>{% endif %}
+    {% if f.url_or_path %}<div><span class="text-slate-500 dark:text-slate-400">URL：</span><code>{{ f.method or '' }} {{ f.url_or_path }}</code></div>{% endif %}
+    {% if f.parameter %}<div><span class="text-slate-500 dark:text-slate-400">参数：</span><code>{{ f.parameter }}</code></div>{% endif %}
+    {% if f.language %}<div><span class="text-slate-500 dark:text-slate-400">语言/框架：</span><code>{{ f.language }}{% if f.framework %} / {{ f.framework }}{% endif %}</code></div>{% endif %}
+    {% if f.discovered_at %}<div><span class="text-slate-500 dark:text-slate-400">发现时间：</span><code>{{ f.discovered_at }}</code></div>{% endif %}
+  </div>
+
+  {# Description #}
+  {% if f.description %}
+  <div class="mt-3">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      描述
+    </h4>
+    <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{{ f.description }}</p>
+  </div>
+  {% endif %}
+
+  {# Impact #}
+  {% if f.impact or f.business_impact %}
+  <div class="mt-4">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      影响
+    </h4>
+    <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{{ f.impact or f.business_impact }}</p>
+  </div>
+  {% endif %}
+
+  {# Attacker capability #}
+  {% if f.attacker_capability %}
+  <div class="mt-3">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">攻击者能力</h4>
+    <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{{ f.attacker_capability }}</p>
+  </div>
+  {% endif %}
+
+  {# Call chain — tabbed (text tree / mermaid) #}
+  {% if f.call_chain %}
+  <div class="mt-5" x-data="{ mode: 'tree' }">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      调用链
+    </h4>
+    <div class="chain-tabs">
+      <span class="chain-tab" :class="mode === 'tree' ? 'active' : ''" @click="mode = 'tree'">树形</span>
+      <span class="chain-tab" :class="mode === 'mermaid' ? 'active' : ''" @click="mode = 'mermaid'">流程图</span>
+    </div>
+    <div x-show="mode === 'tree'" class="chain-tree">
+      {% for c in f.call_chain %}
+      <div class="chain-row {% if loop.last %}sink{% endif %}">
+        <span class="chain-indent">{{ '  ' * loop.index0 }}{% if loop.last %}└─{% else %}├─{% endif %}</span>
+        <span class="chain-symbol">{{ c.symbol or '?' }}</span>
+        <span class="chain-file">({{ c.file or '?' }}{% if c.line %}:{{ c.line }}{% endif %})</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div x-show="mode === 'mermaid'" style="display:none">
+      <div class="mermaid" data-source="{{ call_chain_to_mermaid_attr(f.call_chain) | safe }}"></div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# Vulnerable code snippet #}
+  {% if f.code_snippet %}
+  <div class="mt-5">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4"/></svg>
+      漏洞代码
+    </h4>
+    {% if f.file_path %}<div class="code-title">
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      {{ f.file_path }}{% if f.file_line %}:{{ f.file_line }}{% endif %}
+    </div>{% endif %}
+    <pre class="language-{{ f.prism_lang or 'plaintext' }}"><code class="language-{{ f.prism_lang or 'plaintext' }}">{{ f.code_snippet }}</code></pre>
+  </div>
+  {% endif %}
+
+  {# Reproduction steps #}
+  {% if f.reproduction_steps %}
+  <div class="mt-5">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">复现步骤</h4>
+    <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-800">
+      {% for s in f.reproduction_steps %}<li>{{ s }}</li>{% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+
+  {# PoC #}
+  {% set ev = f.evidence or {} %}
+  {% if ev and (ev.poc_curl or ev.poc_python or ev.poc_java or ev.poc_unit_test or ev.poc_payload) %}
+  <div class="mt-5">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      PoC（仅作验证用，请勿用于未授权场景）
+    </h4>
+    {% if ev.poc_curl %}
+      <div class="code-title">curl</div>
+      <pre class="language-bash"><code class="language-bash">{{ ev.poc_curl }}</code></pre>
+    {% endif %}
+    {% if ev.poc_python %}
+      <div class="code-title">Python</div>
+      <pre class="language-python"><code class="language-python">{{ ev.poc_python }}</code></pre>
+    {% endif %}
+    {% if ev.poc_java %}
+      <div class="code-title">Java</div>
+      <pre class="language-java"><code class="language-java">{{ ev.poc_java }}</code></pre>
+    {% endif %}
+    {% if ev.poc_unit_test %}
+      <div class="code-title">Unit Test</div>
+      <pre class="language-{{ f.prism_lang or 'plaintext' }}"><code class="language-{{ f.prism_lang or 'plaintext' }}">{{ ev.poc_unit_test }}</code></pre>
+    {% endif %}
+    {% if ev.poc_payload %}
+      <div class="code-title">Payload</div>
+      <pre class="language-bash"><code class="language-bash">{{ ev.poc_payload }}</code></pre>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# Remediation — Before / After side-by-side #}
+  {% if f.remediation %}
+  {% set rem = f.remediation %}
+  <div class="mt-5">
+    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      修复建议
+    </h4>
+    {% if rem.summary %}
+    <p class="text-sm text-slate-700 dark:text-slate-300 mb-3 leading-relaxed">{{ rem.summary }}</p>
+    {% endif %}
+    {% if rem.code_before or rem.code_after %}
+    <div class="fix-compare">
+      {% if rem.code_before %}
+      <div class="fix-side before">
+        <div class="fix-side-header">修复前 · Before</div>
+        <pre class="language-{{ f.prism_lang or 'plaintext' }}"><code class="language-{{ f.prism_lang or 'plaintext' }}">{{ rem.code_before }}</code></pre>
+      </div>
+      {% endif %}
+      {% if rem.code_after %}
+      <div class="fix-side after">
+        <div class="fix-side-header">修复后 · After</div>
+        <pre class="language-{{ f.prism_lang or 'plaintext' }}"><code class="language-{{ f.prism_lang or 'plaintext' }}">{{ rem.code_after }}</code></pre>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if rem.reference %}
+    <p class="text-xs mt-3 text-slate-600 dark:text-slate-400">
+      参考：<a class="text-violet-700 dark:text-violet-300 hover:underline" href="{{ rem.reference }}" target="_blank" rel="noopener">{{ rem.reference }}</a>
+    </p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# References #}
+  {% if f.cwe or f.owasp_2021 or f.owasp_api_2023 or f.cve %}
+  <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+    <h4 class="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">参考</h4>
+    <ul class="flex flex-wrap gap-2 text-xs">
+      {% if f.cwe %}
+        {% for c in (f.cwe if f.cwe is iterable and f.cwe is not string else [f.cwe]) %}
+          {% set cid = c.replace('CWE-', '') if c else '' %}
+          <li><a class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-violet-100 dark:hover:bg-violet-950/60 text-slate-700 dark:text-slate-300 hover:text-violet-700 dark:hover:text-violet-300 font-mono transition" href="https://cwe.mitre.org/data/definitions/{{ cid }}.html" target="_blank" rel="noopener">{{ c }}</a></li>
+        {% endfor %}
+      {% endif %}
+      {% if f.owasp_2021 %}<li><a class="px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold hover:underline" href="https://owasp.org/Top10/" target="_blank" rel="noopener">OWASP {{ f.owasp_2021 }}</a></li>{% endif %}
+      {% if f.owasp_api_2023 %}<li><span class="px-2 py-1 rounded bg-cyan-100 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 font-semibold">OWASP API {{ f.owasp_api_2023 }}</span></li>{% endif %}
+      {% if f.cve %}
+        {% for c in (f.cve if f.cve is iterable and f.cve is not string else [f.cve]) %}
+          <li><a class="px-2 py-1 rounded bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-mono hover:underline" href="https://nvd.nist.gov/vuln/detail/{{ c }}" target="_blank" rel="noopener">{{ c }}</a></li>
+        {% endfor %}
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
+</article>

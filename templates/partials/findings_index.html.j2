@@ -1,0 +1,41 @@
+{# Findings index — collapsible list with severity counts #}
+<section id="findings" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+  <details open>
+    <summary class="cursor-pointer px-6 py-5 font-semibold flex items-center justify-between gap-3">
+      <span class="flex items-center gap-3">
+        <svg class="w-5 h-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        漏洞目录 · {{ findings_count }} 个
+      </span>
+      <div class="flex flex-wrap gap-1.5 text-xs">
+        {% if counts.critical %}<span class="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 font-semibold">Critical {{ counts.critical }}</span>{% endif %}
+        {% if counts.high %}<span class="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 font-semibold">High {{ counts.high }}</span>{% endif %}
+        {% if counts.medium %}<span class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 font-semibold">Medium {{ counts.medium }}</span>{% endif %}
+        {% if counts.low %}<span class="px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-300 font-semibold">Low {{ counts.low }}</span>{% endif %}
+        {% if counts.info %}<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">Info {{ counts.info }}</span>{% endif %}
+      </div>
+    </summary>
+    <div class="px-6 pb-6">
+      {% if findings %}
+      <ul class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for f in findings %}
+        <li class="py-3 flex items-start gap-3 group hover:bg-slate-50 dark:hover:bg-slate-900/50 -mx-3 px-3 rounded-lg transition">
+          <span class="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 grid place-items-center text-xs font-bold text-slate-500 dark:text-slate-400">{{ loop.index }}</span>
+          <div class="flex-1 min-w-0">
+            <a href="#{{ f.id }}" class="text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-violet-700 dark:group-hover:text-violet-300 line-clamp-2 leading-snug">{{ f.title }}</a>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <span class="flex items-center gap-1"><span class="sev-dot {{ f.severity }}"></span><span class="font-semibold">{{ f.severity }}</span></span>
+              {% if f.cvss_score %}<span>CVSS {{ f.cvss_score }}</span>{% endif %}
+              {% if f.cwe %}<span class="font-mono">{{ f.cwe[0] if f.cwe is iterable else f.cwe }}</span>{% endif %}
+              <span class="font-mono truncate">{{ f.file_path }}{% if f.file_line %}:{{ f.file_line }}{% endif %}</span>
+            </div>
+          </div>
+          <span class="flex-shrink-0 font-mono text-xs text-slate-400">{{ f.id }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">未发现漏洞。</p>
+      {% endif %}
+    </div>
+  </details>
+</section>

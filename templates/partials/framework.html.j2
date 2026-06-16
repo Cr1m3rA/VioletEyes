@@ -1,0 +1,117 @@
+{# Framework profile, route table, dependency risks #}
+<section id="framework" class="space-y-6">
+  <div class="flex items-center gap-2">
+    <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-violet-500 to-violet-700"></span>
+    <h2 class="text-xl font-bold tracking-tight">框架画像</h2>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-6">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <h3 class="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">技术栈识别</h3>
+      <dl class="space-y-3 text-sm">
+        <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-slate-400">主语言</dt><dd class="font-mono font-semibold text-right">{{ primary_language or '—' }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-slate-400">框架</dt><dd class="font-mono font-semibold text-right">{{ frameworks or '—' }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-slate-400">构建工具</dt><dd class="font-mono font-semibold text-right">{{ build_tool or '—' }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-slate-400">主入口</dt><dd class="font-mono text-right break-all">{{ entry_file or '—' }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-slate-500 dark:text-slate-400">HTTP 入口</dt><dd class="font-semibold text-right">{{ routes_count }} 个</dd></div>
+      </dl>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+      <h3 class="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">入口文件清单</h3>
+      {% if entry_points %}
+      <table class="section-table">
+        <thead><tr><th>入口</th><th>类型</th><th>文件</th></tr></thead>
+        <tbody>
+          {% for ep in entry_points %}
+          <tr>
+            <td class="font-mono text-violet-700 dark:text-violet-300">{{ ep.symbol or '—' }}</td>
+            <td><span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-xs">{{ ep.framework or ep.type or '—' }}</span></td>
+            <td class="font-mono text-xs break-all">{{ ep.path or ep.file or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="text-sm text-slate-500 dark:text-slate-400">未识别到入口文件。</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden" open>
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm flex items-center justify-between">
+      <span>HTTP 路由表（{{ routes_count }} 个接口）</span>
+      <span class="text-xs text-slate-400">点击折叠 / 展开</span>
+    </summary>
+    <div class="px-6 pb-6">
+      {% if routes %}
+      <table class="section-table">
+        <thead><tr><th>方法</th><th>URL</th><th>控制器 / 路由</th><th>文件位置</th><th>鉴权</th></tr></thead>
+        <tbody>
+          {% for r in routes %}
+          <tr>
+            <td>
+              {% for m in (r.method if r.method is iterable and r.method is not string else [r.method] if r.method else ['*']) %}
+                <span class="inline-block px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 text-xs font-mono font-semibold mr-0.5">{{ m }}</span>
+              {% endfor %}
+            </td>
+            <td class="font-mono text-xs">{{ r.url_or_path or '—' }}</td>
+            <td class="font-mono text-xs">{{ r.class_or_route or '—' }}</td>
+            <td class="font-mono text-xs break-all">{{ r.file_path }}{% if r.file_line %}:{{ r.file_line }}{% endif %}</td>
+            <td>
+              {% if r.auth_required %}
+                <span class="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">✓ {{ r.auth_mechanism or '已鉴权' }}</span>
+              {% else %}
+                <span class="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 text-xs font-semibold">— 未鉴权</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="text-sm text-slate-500 dark:text-slate-400">未发现 HTTP 入口。</p>
+      {% endif %}
+    </div>
+  </details>
+
+  {% if deps_risk %}
+  <details class="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-2xl shadow-sm overflow-hidden" open>
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm flex items-center justify-between">
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        高危第三方依赖（{{ deps_risk_count }} 项）
+      </span>
+      <span class="text-xs text-slate-400">点击折叠 / 展开</span>
+    </summary>
+    <div class="px-6 pb-6">
+      <table class="section-table">
+        <thead><tr><th>依赖</th><th>版本</th><th>CVE</th><th>等级</th></tr></thead>
+        <tbody>
+          {% for d in deps_risk %}
+          <tr>
+            <td class="font-mono">{{ d.name }}</td>
+            <td class="font-mono text-xs">{{ d.version or '—' }}</td>
+            <td class="text-xs">
+              {% for cve in (d.cve if d.cve is iterable and d.cve is not string else [d.cve] if d.cve else []) %}
+                <span class="inline-block px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-rose-700 dark:text-rose-300 font-mono mr-1">{{ cve }}</span>
+              {% endfor %}
+            </td>
+            <td>
+              {% set sev = d.severity or 'Medium' %}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
+                {% if sev == 'Critical' %}bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300
+                {% elif sev == 'High' %}bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300
+                {% elif sev == 'Medium' %}bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300
+                {% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+                <span class="sev-dot {{ sev }}"></span>{{ sev }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  {% endif %}
+</section>
