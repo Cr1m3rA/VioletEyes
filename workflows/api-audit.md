@@ -71,3 +71,10 @@ banner: "🎯 API-focused audit — 重点审计 HTTP 入口"
 - `findings.json` — 漏洞
 - `api-coverage.json` — 鉴权覆盖情况
 - `code-audit-report.html` — 报告
+
+## 不适用：第三方依赖 CVE 扫描（V1.2）
+
+API 专项默认在 `full-audit` 阶段已完成依赖扫描。如需独立再跑：
+```bash
+python3 scripts/cve_lookup.py <repo_root> --output dep_cve.json
+```

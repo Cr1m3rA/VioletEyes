@@ -1,7 +1,7 @@
 ---
 name: VioletEyes
-description: 面向白盒源码安全审计的 AI Agent Skill，开发者 Cr1m3rA。覆盖 Java / Spring / Kotlin / Python / Django / Flask / FastAPI / PHP / Laravel / Node.js / Express / NestJS / Go / Gin / Echo / Ruby / Rails / C# / .NET / Vue / React / Angular 等主流前后端框架以及不完整代码片段。Agent 先识别项目语言与开发框架，根据框架特征定位入口文件 / 主函数 / 路由表，再通过目录结构与文件名做步进式、按需的代码读取（避免一次性拉全仓库），对潜在 sink 点做污染传播分析，输出单文件 HTML 审计报告。覆盖 OWASP Top 10、API Security Top 10 与主流语言特有的反序列化 / 注入 / 越权 / 配置类漏洞。无需任何 MCP，纯静态分析 + LLM 推理。当前版本为单体白盒审计 Skill，黑盒联动（与渗透测试方向的配套 Skill）处于待开发状态，仅保留接口字段与抽取脚本。
-version: 1.0.0
+description: 面向白盒源码安全审计的 AI Agent Skill，开发者 Cr1m3rA。覆盖 Java / Spring / Kotlin / Python / Django / Flask / FastAPI / PHP / Laravel / Node.js / Express / NestJS / Go / Gin / Echo / Ruby / Rails / C# / .NET / Vue / React / Angular 等主流前后端框架以及不完整代码片段。Agent 先识别项目语言与开发框架，根据框架特征定位入口文件 / 主函数 / 路由表，再通过目录结构与文件名做步进式、按需的代码读取（避免一次性拉全仓库），对潜在 sink 点做污染传播分析，输出单文件 HTML 审计报告。V1.2 起集成 OSV.dev 联网 CVE 扫描与离线缓存，自动匹配已知漏洞并升级 Critical/High 为 finding。覆盖 OWASP Top 10、API Security Top 10 与主流语言特有的反序列化 / 注入 / 越权 / 配置类漏洞。无需任何 MCP，纯静态分析 + LLM 推理。当前版本为单体白盒审计 Skill，黑盒联动（与渗透测试方向的配套 Skill）处于待开发状态，仅保留接口字段与抽取脚本。
+version: 1.2.0
 author: Cr1m3rA
 license: Authorized-Testing-Only
 tags:
@@ -26,6 +26,7 @@ tags:
   - react
   - angular
   - snippet-audit
+  - dependency-cve
 triggers:
   - "代码审计"
   - "code audit"
@@ -45,6 +46,11 @@ triggers:
   - "审计项目"
   - "audit repository"
   - "漏洞挖掘"
+  - "依赖 CVE"
+  - "third-party CVE"
+  - "OSV 扫描"
+  - "Log4Shell"
+  - "Spring4Shell"
 mcp_dependencies: []
 capability_modes:
   - name: standard
@@ -166,6 +172,39 @@ outputs:
 
 **当前状态：待开发。** 配套黑盒 Skill 尚未实现，本 Skill 不会调用任何外部渗透测试服务。
 一旦该 Skill 落地，会在 `README.md` 第八节补全字段映射与调用方式。
+
+## 第三方依赖 CVE 扫描（V1.2 新增）
+
+V1.2 起集成 **OSV.dev**（[osv.dev](https://osv.dev)，免费无鉴权）作为主要漏洞源，
+在 Step 3 入口定位之后、Step 4 步进式读取之前插入 **Step 3.5 第三方依赖 CVE 扫描**。
+
+**核心流程**：
+
+1. `framework_detect.py --emit-deps-json` 解析所有 14 类 manifest 抽取 `(ecosystem, package, version)` 三元组
+2. `cve_lookup.py` 对每个三元组调 OSV.dev `POST /v1/query`，无网时回落至 `payloads/vulnerable-ranges.json` 离线缓存
+3. Critical/High 自动追加为 finding（复用现有 `vuln_class` 枚举：`dangerous-deps` / `log4shell` / `spring4shell`）
+4. 输出 `dependency_cve.json`，由 `render_report.py --cve-input` 渲染到报告的「第三方依赖 CVE 在线扫描」section
+
+**何时启用**：
+
+- 用户给出**含 manifest 的仓库**（pom.xml / package.json / requirements.txt / go.mod / Gemfile / composer.json / Cargo.toml / *.csproj / packages.config / build.gradle(.kts)）
+- 用户希望看到"已知公开漏洞"快速扫描结果（无需复现 PoC）
+- 用户在内网环境运行 → `--offline` 强制走缓存
+
+**何时不启用**：
+
+- 用户输入是单段代码（snippet） → snippet 无 manifest，跳过
+- 用户只关心业务逻辑漏洞 → CVE 扫描不在范围内
+- 用户要求"自动修复并 PR" → CVE 数据只用于报告，不触发修改
+
+**已知边界**：
+
+- ❌ **lockfile 不解析**（V1.3 计划）—— 可能过度告警
+- ❌ **传递依赖不解析**（V1.3 计划）—— 只扫直接依赖
+- ⚠️ **CVSS 缺失** —— 回落到 GHSA severity；都没有则标 `Unknown`
+- ⚠️ **缓存陈旧 > 90 天** —— Dashboard 软提示，不阻断
+
+详细协议、字段映射、限流策略、缓存格式见 [`docs/07-dependency-cve.md`](docs/07-dependency-cve.md)。
 
 ## Directory layout
 

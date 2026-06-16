@@ -89,6 +89,13 @@ LLM 在 snippet 模式下**无法**保证：
 
 snippet 模式产出的 finding **必须**经过人工复核才能作为最终结论。
 
+## 不适用：第三方依赖 CVE 扫描（V1.2）
+
+snippet 输入无 manifest 上下文，自动跳过。如需独立扫描，可在 `full-audit` 完成后单独运行：
+```bash
+python3 scripts/cve_lookup.py <repo_root> --output dep_cve.json
+```
+
 ## 示例输入
 
 ```python

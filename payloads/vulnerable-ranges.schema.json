@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://violet-eyes/schemas/vulnerable-ranges.json",
+  "title": "VioletEyes Offline CVE Cache",
+  "description": "V1.2 — Pre-built offline mirror of common advisories so smoke test and offline (no-network) audits can still produce dependency-CVE findings. Refreshed by scripts/build_cve_cache.py.",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "source", "advisories"],
+  "properties": {
+    "schema_version":   { "type": "string", "const": "1.0.0" },
+    "generated_at":     { "type": "string", "format": "date-time" },
+    "source":           { "type": "string", "description": "Origin label (e.g. 'osv.dev (snapshot)', 'osv.dev (manual seed)')" },
+    "advisories": {
+      "type": "object",
+      "description": "Lookup table keyed by '<ecosystem>:<name>:<version>'.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["matched_at", "advisories"],
+        "properties": {
+          "matched_at":  { "type": "string", "format": "date-time" },
+          "advisories": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/advisory" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "advisory": {
+      "type": "object",
+      "required": ["id", "summary", "severity"],
+      "properties": {
+        "id":             { "type": "string", "description": "OSV GHSA id" },
+        "aliases":        { "type": "array", "items": { "type": "string" } },
+        "cve":            { "type": "array", "items": { "type": "string", "pattern": "^CVE-[0-9]{4}-[0-9]+$" } },
+        "ghsa":           { "type": "array", "items": { "type": "string" } },
+        "summary":        { "type": "string" },
+        "severity":       { "type": "string", "enum": ["Critical", "High", "Medium", "Low", "Unknown"] },
+        "cvss_score":     { "type": "number", "minimum": 0, "maximum": 10 },
+        "cvss_vector":    { "type": "string" },
+        "affected_range": { "type": "string" },
+        "fixed_versions": { "type": "array", "items": { "type": "string" } },
+        "advisory_url":   { "type": "string", "format": "uri" },
+        "nvd_url":        { "type": "string", "format": "uri" },
+        "published_at":   { "type": "string", "format": "date-time" },
+        "source":         { "type": "string", "enum": ["osv-online", "offline-cache"] }
+      }
+    }
+  }
+}

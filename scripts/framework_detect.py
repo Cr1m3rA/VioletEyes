@@ -355,24 +355,57 @@ def version_in_range(version: str, lo: str, hi: str) -> bool:
     return parse(lo) <= v <= parse(hi)
 
 
+# 标准 manifest 文件名（精确匹配）
+_EXACT_MANIFEST_NAMES = [
+    "pom.xml", "build.gradle", "build.gradle.kts",
+    "requirements.txt", "pyproject.toml", "setup.py", "Pipfile",
+    "composer.json",
+    "package.json",
+    "go.mod",
+    "Gemfile",
+    "Cargo.toml",
+    "packages.config",   # legacy NuGet
+]
+
+# glob 模式（适配项目名变化）
+_GLOB_MANIFEST_PATTERNS = [
+    "*.csproj",          # .NET / NuGet
+]
+
+
 def detect_manifests(root: Path) -> List[Path]:
-    """查找所有 manifest 文件。"""
-    manifests = []
-    for name in [
-        "pom.xml", "build.gradle", "build.gradle.kts",
-        "requirements.txt", "pyproject.toml", "setup.py", "Pipfile",
-        "composer.json",
-        "package.json",
-        "go.mod",
-        "Gemfile",
-        "Cargo.toml",
-    ]:
+    """查找所有 manifest 文件。
+
+    V1.2 起新增 ``*.csproj`` / ``packages.config`` (NuGet) 与 ``build.gradle.kts``
+    （Gradle Kotlin DSL）支持，便于后续 ``cve_lookup.py`` 联网扫描。
+    """
+    manifests: List[Path] = []
+    seen: set = set()
+
+    def _add(p: Path) -> None:
+        try:
+            rp = p.resolve()
+        except OSError:
+            rp = p
+        if rp in seen:
+            return
+        seen.add(rp)
+        # 排除常见构建/依赖目录
+        parts = p.parts
+        if any(x in parts for x in [
+            "node_modules", "target", "build", "dist",
+            "venv", ".venv", "vendor", "__pycache__",
+            ".git", "obj", "bin",   # .NET build output
+        ]):
+            return
+        manifests.append(p)
+
+    for name in _EXACT_MANIFEST_NAMES:
         for p in root.rglob(name):
-            # 排除 node_modules / target / build / dist / venv
-            parts = p.parts
-            if any(x in parts for x in ["node_modules", "target", "build", "dist", "venv", ".venv", "vendor", "__pycache__"]):
-                continue
-            manifests.append(p)
+            _add(p)
+    for pat in _GLOB_MANIFEST_PATTERNS:
+        for p in root.rglob(pat):
+            _add(p)
     return manifests
 
 
@@ -701,6 +734,13 @@ def main():
     parser = argparse.ArgumentParser(description="VioletEyes Framework Detector")
     parser.add_argument("root", help="Path to repo root")
     parser.add_argument("--output", default="framework_profile.json")
+    parser.add_argument(
+        "--emit-deps-json",
+        default="",
+        metavar="PATH",
+        help="V1.2: 同时输出 third_party_deps.json 给 cve_lookup.py 使用。"
+             "格式 [{ecosystem, name, version, manifest, manifest_path}, ...]",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -733,6 +773,28 @@ def main():
     print(f"     frameworks: {profile['frameworks']}")
     print(f"     entry_points: {len(entries)}")
     print(f"     dangerous_dependencies: {len(dangerous)}")
+
+    # V1.2: 额外输出 third_party_deps.json，给 cve_lookup.py 复用，避免重复扫树
+    if args.emit_deps_json:
+        try:
+            # 延迟导入，避免在 --emit-deps-json 路径之外增加启动开销
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                "manifest_parsers",
+                Path(__file__).resolve().parent / "manifest_parsers.py",
+            )
+            mp = importlib.util.module_from_spec(spec)  # type: ignore
+            spec.loader.exec_module(mp)  # type: ignore
+            deps = mp.collect_dependencies(root)
+            out_path = Path(args.emit_deps_json)
+            out_path.write_text(
+                json.dumps(deps, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            print(f"[OK] third-party deps emitted to {args.emit_deps_json} ({len(deps)} entries)")
+        except Exception as e:
+            print(f"[WARN] --emit-deps-json failed: {e}", file=sys.stderr)
+            # 不阻塞主流程——framework_profile 仍已写出
 
 
 if __name__ == "__main__":

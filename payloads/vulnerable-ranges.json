@@ -1,0 +1,268 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-06-16T00:00:00Z",
+  "source": "osv.dev (manual seed — V1.2 launch)",
+  "_note": "Refresh with `python scripts/build_cve_cache.py`. Keys are '<ecosystem>:<name>:<version>' (PyPI/npm names lowercased for stable lookup).",
+  "advisories": {
+    "Maven:log4j-core:2.14.1": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-jfh8-c2jp-5v3q",
+          "aliases": ["CVE-2021-44228", "CVE-2021-45046"],
+          "cve": ["CVE-2021-44228", "CVE-2021-45046"],
+          "ghsa": ["GHSA-jfh8-c2jp-5v3q"],
+          "summary": "Apache Log4j2 JNDI lookup RCE (Log4Shell). Versions 2.0-beta9 through 2.14.1 are vulnerable; 2.15.0 partially mitigates.",
+          "severity": "Critical",
+          "cvss_score": 10.0,
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+          "affected_range": ">=2.0-beta9, <2.15.0",
+          "fixed_versions": ["2.15.0", "2.16.0", "2.17.0", "2.17.1"],
+          "advisory_url": "https://osv.dev/GHSA-jfh8-c2jp-5v3q",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228",
+          "published_at": "2021-12-10T00:00:00Z",
+          "source": "offline-cache"
+        },
+        {
+          "id": "GHSA-7rjr-3q55-vv33",
+          "aliases": ["CVE-2021-45105"],
+          "cve": ["CVE-2021-45105"],
+          "ghsa": ["GHSA-7rjr-3q55-vv33"],
+          "summary": "Apache Log4j2 DoS via recursive lookup (StackOverflowError). Affects 2.0-alpha1 through 2.16.0 (excluding 2.12.3).",
+          "severity": "High",
+          "cvss_score": 7.5,
+          "affected_range": ">=2.0-alpha1, <2.17.0",
+          "fixed_versions": ["2.17.0", "2.17.1"],
+          "advisory_url": "https://osv.dev/GHSA-7rjr-3q55-vv33",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-45105",
+          "published_at": "2021-12-18T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "Maven:log4j-api:2.14.1": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-jfh8-c2jp-5v3q",
+          "aliases": ["CVE-2021-44228"],
+          "cve": ["CVE-2021-44228"],
+          "ghsa": ["GHSA-jfh8-c2jp-5v3q"],
+          "summary": "Apache Log4j API mirrors the Log4Shell vulnerability in log4j-core.",
+          "severity": "Critical",
+          "cvss_score": 10.0,
+          "affected_range": ">=2.0-beta9, <2.15.0",
+          "fixed_versions": ["2.15.0", "2.16.0", "2.17.0", "2.17.1"],
+          "advisory_url": "https://osv.dev/GHSA-jfh8-c2jp-5v3q",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228",
+          "published_at": "2021-12-10T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "Maven:jackson-databind:2.9.10": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-7gfc-8cq8-jh5f",
+          "aliases": ["CVE-2020-25649"],
+          "cve": ["CVE-2020-25649"],
+          "ghsa": ["GHSA-7gfc-8cq8-jh5f"],
+          "summary": "FasterXML jackson-databind mishandles the interaction between serialization gadgets and typing, leading to RCE.",
+          "severity": "High",
+          "cvss_score": 8.1,
+          "affected_range": ">=2.0.0, <2.9.10.6",
+          "fixed_versions": ["2.9.10.6", "2.10.0"],
+          "advisory_url": "https://osv.dev/GHSA-7gfc-8cq8-jh5f",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2020-25649",
+          "published_at": "2020-10-01T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "Maven:snakeyaml:1.30": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-mw99-9chc-xw7r",
+          "aliases": ["CVE-2022-1471"],
+          "cve": ["CVE-2022-1471"],
+          "ghsa": ["GHSA-mw99-9chc-xw7r"],
+          "summary": "SnakeYAML's Constructor() class does not restrict types which can be instantiated during deserialization (RCE).",
+          "severity": "High",
+          "cvss_score": 9.8,
+          "affected_range": ">=0, <2.0",
+          "fixed_versions": ["2.0"],
+          "advisory_url": "https://osv.dev/GHSA-mw99-9chc-xw7r",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-1471",
+          "published_at": "2022-12-01T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "npm:lodash:4.17.20": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-29mw-wpgm-hmr9",
+          "aliases": ["CVE-2021-23337"],
+          "cve": ["CVE-2021-23337"],
+          "ghsa": ["GHSA-29mw-wpgm-hmr9"],
+          "summary": "Lodash command injection via template function. Attacker-controlled template strings can lead to RCE.",
+          "severity": "High",
+          "cvss_score": 7.2,
+          "affected_range": ">=0, <4.17.21",
+          "fixed_versions": ["4.17.21"],
+          "advisory_url": "https://osv.dev/GHSA-29mw-wpgm-hmr9",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-23337",
+          "published_at": "2021-02-15T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "npm:axios:0.27.0": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-42xw-2xvc-qx8m",
+          "aliases": ["CVE-2023-45857"],
+          "cve": ["CVE-2023-45857"],
+          "ghsa": ["GHSA-42xw-2xvc-qx8m"],
+          "summary": "Axios CSRF token leak: when used with withCredentials, Axios may send the X-XSRF-TOKEN header to a different origin.",
+          "severity": "Medium",
+          "cvss_score": 6.5,
+          "affected_range": ">=0.8.1, <1.6.0",
+          "fixed_versions": ["1.6.0"],
+          "advisory_url": "https://osv.dev/GHSA-42xw-2xvc-qx8m",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2023-45857",
+          "published_at": "2023-11-08T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "npm:minimist:1.2.5": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-xv3h-4844-9h36",
+          "aliases": ["CVE-2021-44906"],
+          "cve": ["CVE-2021-44906"],
+          "ghsa": ["GHSA-xv3h-4844-9h36"],
+          "summary": "minimist prototype pollution via __proto__ assignment in the constructor.",
+          "severity": "Critical",
+          "cvss_score": 9.8,
+          "affected_range": ">=0, <1.2.6",
+          "fixed_versions": ["1.2.6"],
+          "advisory_url": "https://osv.dev/GHSA-xv3h-4844-9h36",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44906",
+          "published_at": "2021-03-16T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "PyPI:django:4.2.0": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-9wx4-2c25-2vq3",
+          "aliases": ["CVE-2024-27351"],
+          "cve": ["CVE-2024-27351"],
+          "ghsa": ["GHSA-9wx4-2c25-2vq3"],
+          "summary": "Django SQL injection via the GIS function trunc() and a crafted lookup name.",
+          "severity": "High",
+          "cvss_score": 8.0,
+          "affected_range": ">=4.2, <4.2.11",
+          "fixed_versions": ["4.2.11", "5.0.2"],
+          "advisory_url": "https://osv.dev/GHSA-9wx4-2c25-2vq3",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-27351",
+          "published_at": "2024-04-03T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "PyPI:requests:2.31.0": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-9wx4-h78v-vp56",
+          "aliases": ["CVE-2024-35195"],
+          "cve": ["CVE-2024-35195"],
+          "ghsa": ["GHSA-9wx4-h78v-vp56"],
+          "summary": "requests Session.verify=False persists across redirects, defeating TLS verification.",
+          "severity": "Medium",
+          "cvss_score": 5.6,
+          "affected_range": ">=2.0, <2.32.0",
+          "fixed_versions": ["2.32.0", "2.32.1", "2.32.2", "2.32.3"],
+          "advisory_url": "https://osv.dev/GHSA-9wx4-h78v-vp56",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-35195",
+          "published_at": "2024-05-20T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "PyPI:pyyaml:5.4": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-8q59-q68x-6hv2",
+          "aliases": ["CVE-2020-14343"],
+          "cve": ["CVE-2020-14343"],
+          "ghsa": ["GHSA-8q59-q68x-6hv2"],
+          "summary": "PyYAML yaml.load with default Loader allows arbitrary code execution.",
+          "severity": "Critical",
+          "cvss_score": 9.8,
+          "affected_range": ">=0, <5.4",
+          "fixed_versions": ["5.4"],
+          "advisory_url": "https://osv.dev/GHSA-8q59-q68x-6hv2",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2020-14343",
+          "published_at": "2020-07-17T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "PyPI:pillow:8.3.0": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-8rj5-p5hw-w5f7",
+          "aliases": ["CVE-2021-23437"],
+          "cve": ["CVE-2021-23437"],
+          "ghsa": ["GHSA-8rj5-p5hw-w5f7"],
+          "summary": "Pillow ReDoS via crafted path strings to getmask() / convert().",
+          "severity": "High",
+          "cvss_score": 7.5,
+          "affected_range": ">=0, <8.3.2",
+          "fixed_versions": ["8.3.2", "9.0.0"],
+          "advisory_url": "https://osv.dev/GHSA-8rj5-p5hw-w5f7",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-23437",
+          "published_at": "2021-08-13T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    },
+    "NuGet:Newtonsoft.Json:13.0.1": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": []
+    },
+    "NuGet:Microsoft.AspNetCore.App:2.2.0": {
+      "matched_at": "2026-06-16T00:00:00Z",
+      "advisories": [
+        {
+          "id": "GHSA-hxrm-9w7p-39cc",
+          "aliases": ["CVE-2024-21386"],
+          "cve": ["CVE-2024-21386"],
+          "ghsa": ["GHSA-hxrm-9w7p-39cc"],
+          "summary": "Microsoft ASP.NET Core 2.2 is end-of-life and receives no security patches; multiple unpatched issues remain.",
+          "severity": "High",
+          "cvss_score": 7.5,
+          "affected_range": "==2.2.0",
+          "fixed_versions": ["6.0.0", "7.0.0", "8.0.0"],
+          "advisory_url": "https://osv.dev/GHSA-hxrm-9w7p-39cc",
+          "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21386",
+          "published_at": "2024-02-13T00:00:00Z",
+          "source": "offline-cache"
+        }
+      ]
+    }
+  }
+}

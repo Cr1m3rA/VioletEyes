@@ -28,7 +28,7 @@
     "auto_detect": false
   },
   "permissions": {
-    "network": [],
+    "network": ["api.osv.dev:443"],
     "filesystem": ["read_source", "write_report"],
     "execution": ["python3"]
   },
@@ -42,14 +42,19 @@
     "max_findings": { "type": "integer", "default": 100 },
     "report_path": { "type": "string", "default": "./code-audit-report.html" },
     "include_snippet": { "type": "boolean", "default": true },
-    "token_budget": { "type": "integer", "default": 200000 }
+    "token_budget": { "type": "integer", "default": 200000 },
+    "enable_cve_lookup": { "type": "boolean", "default": true, "description": "V1.2: 是否启用第三方依赖 CVE 联网扫描 (Step 3.5)" },
+    "cve_input": { "type": "string", "default": "", "description": "V1.2: 预生成的 dependency_cve.json 路径，缺则不渲染 CVE section" },
+    "cve_min_severity": { "type": "string", "default": "High", "enum": ["Low", "Medium", "High", "Critical"], "description": "V1.2: 自动升级为 finding 的最低严重度" },
+    "cve_offline_only": { "type": "boolean", "default": false, "description": "V1.2: 强制仅用离线缓存（内网/隔离环境）" }
   },
   "outputs": {
     "report": "HTML 源码审计报告",
     "findings": "JSON 漏洞清单",
     "assets": "JSON 代码资产清单",
     "framework_profile": "JSON 语言/框架/入口画像",
-    "execution_log": "TXT Agent 步进日志"
+    "execution_log": "TXT Agent 步进日志",
+    "dependency_cve": "V1.2: JSON 第三方依赖 CVE 清单 (dependency_cve.schema.json)"
   },
   "supported_languages": [
     "java", "kotlin", "scala", "groovy",
@@ -129,7 +134,9 @@
     "html_reporting": true,
     "owasp_mapping": true,
     "cwe_mapping": true,
-    "cvss_scoring": true
+    "cvss_scoring": true,
+    "dependency_cve_lookup": true,
+    "offline_cve_cache": true
   },
   "future_capabilities": {
     "blackbox_integration": {
@@ -137,6 +144,16 @@
       "description": "与配套的渗透测试方向 Skill 联动，由本 Skill 产出 finding 中的 url_or_path / method / parameter 字段，移交黑盒层做 PoC 验证。",
       "depends_on": "配套 Skill 尚未发布",
       "scripts": ["scripts/extract_for_blackbox.py"]
+    },
+    "lockfile_parsing": {
+      "status": "planned",
+      "description": "V1.3: 解析 package-lock.json / yarn.lock / go.sum / Cargo.lock 等 lockfile，避免对已被 lock 修复的版本过度告警。",
+      "depends_on": "V1.2 manifest 解析稳定"
+    },
+    "transitive_resolution": {
+      "status": "planned",
+      "description": "V1.3: 在有 lockfile 时展开传递依赖图，覆盖嵌套依赖漏洞。",
+      "depends_on": "lockfile_parsing"
     }
   }
 }

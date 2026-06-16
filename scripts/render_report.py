@@ -52,6 +52,10 @@ VERSION = "1.0.0"
 SEVERITY_ORDER = ["Critical", "High", "Medium", "Low", "Informational"]
 SEVERITY_FILTERS = ["All", "Critical", "High", "Medium", "Low", "Info"]
 
+# CVE advisory severity order — used to rank dependency_cve items
+CVE_SEVERITY_ORDER = ["Critical", "High", "Medium", "Low", "Unknown"]
+CVE_SEVERITY_RANK = {s: i for i, s in enumerate(CVE_SEVERITY_ORDER)}
+
 # ---------------------------------------------------------------------------
 # Redaction & escaping
 # ---------------------------------------------------------------------------
@@ -267,6 +271,85 @@ def normalize_finding(f: Dict, idx: int) -> Dict:
 
 
 # ---------------------------------------------------------------------------
+# Dependency CVE flattening (V1.2)
+# ---------------------------------------------------------------------------
+
+
+def flatten_dependency_cve(cve_data: Optional[Dict]) -> Tuple[List[Dict], int, Dict[str, int], str, int, int]:
+    """Turn ``dependency_cve.json`` into Jinja-friendly vars.
+
+    Returns ``(cve_findings, cve_findings_count, cve_by_severity,
+    cve_source, cve_queries_total, cve_queries_cached)``.
+
+    Each ``cve_findings`` row is one advisory, flattened with package-level
+    context (``ecosystem``, ``name``, ``version``, ``manifest``, etc.).
+    """
+    if not isinstance(cve_data, dict):
+        return [], 0, {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Unknown": 0}, "none", 0, 0
+    items = cve_data.get("items") or []
+    if not isinstance(items, list):
+        items = []
+
+    rows: List[Dict] = []
+    by_sev: Dict[str, int] = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Unknown": 0}
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        eco = it.get("ecosystem") or "—"
+        name = it.get("name") or "—"
+        version = it.get("version") or "—"
+        manifest = it.get("manifest") or it.get("manifest_path") or "—"
+        advisories = it.get("advisories") or []
+        if not isinstance(advisories, list):
+            advisories = []
+        for adv in advisories:
+            if not isinstance(adv, dict):
+                continue
+            sev = adv.get("severity") or "Unknown"
+            if sev not in by_sev:
+                sev = "Unknown"
+            by_sev[sev] += 1
+            cve_aliases = [a for a in (adv.get("cve") or []) if isinstance(a, str)]
+            ghsa_aliases = [a for a in (adv.get("ghsa") or []) if isinstance(a, str)]
+            fixed_versions = [v for v in (adv.get("fixed_versions") or []) if isinstance(v, str)]
+            summary = (adv.get("summary") or "")
+            # Run redact() over user-supplied summary (defense in depth)
+            summary = redact(summary) if summary else ""
+            rows.append({
+                "ecosystem":        eco,
+                "name":             name,
+                "version":          version,
+                "manifest":         manifest,
+                "severity":         sev,
+                "cvss_score":       adv.get("cvss_score"),
+                "cvss_vector":      adv.get("cvss_vector") or "",
+                "cve_id":           cve_aliases[0] if cve_aliases else "",
+                "cve":              cve_aliases,
+                "ghsa":             ghsa_aliases,
+                "summary":          summary,
+                "fixed_versions":   fixed_versions,
+                "fixed_version":    fixed_versions[0] if fixed_versions else "—",
+                "affected_range":   adv.get("affected_range") or "",
+                "advisory_url":     adv.get("advisory_url") or "",
+                "nvd_url":          adv.get("nvd_url") or "",
+                "source":           adv.get("source") or "offline-cache",
+            })
+
+    # Sort: worst severity first, then ecosystem/name
+    rows.sort(key=lambda r: (
+        CVE_SEVERITY_RANK.get(r["severity"], 4),
+        r["ecosystem"], r["name"], r["cve_id"],
+    ))
+
+    source = cve_data.get("source") or "none"
+    if source not in ("osv-online", "offline-cache", "mixed", "none"):
+        source = "none"
+    q_total = int(cve_data.get("queries_total") or 0)
+    q_cached = int(cve_data.get("queries_cached") or 0)
+    return rows, len(rows), by_sev, source, q_total, q_cached
+
+
+# ---------------------------------------------------------------------------
 # Render
 # ---------------------------------------------------------------------------
 
@@ -286,6 +369,7 @@ def render(
     test_date_start: str,
     test_date_end: str,
     tool_versions: Dict[str, str],
+    cve_data: Optional[Dict] = None,
 ) -> str:
     findings = filter_findings(findings, severity_floor)
 
@@ -330,6 +414,10 @@ def render(
     deps_risk = profile.get("dangerous_dependencies", []) or []
     if not isinstance(deps_risk, list):
         deps_risk = []
+
+    # V1.2: dependency CVE lookup (flattened for Jinja)
+    cve_findings, cve_findings_count, cve_by_severity, cve_source, \
+        cve_queries_total, cve_queries_cached = flatten_dependency_cve(cve_data)
 
     total_assets = len(assets)
     tested_assets = sum(1 for a in assets if a.get("tested"))
@@ -469,6 +557,12 @@ def render(
         deps_count=deps_count,
         deps_risk=deps_risk,
         deps_risk_count=len(deps_risk),
+        cve_findings=cve_findings,
+        cve_findings_count=cve_findings_count,
+        cve_by_severity=cve_by_severity,
+        cve_source=cve_source,
+        cve_queries_total=cve_queries_total,
+        cve_queries_cached=cve_queries_cached,
         findings=findings_norm,
         findings_count=total,
         counts=counts_dict,
@@ -506,6 +600,9 @@ def main() -> int:
     parser.add_argument("--assets", default="assets.json")
     parser.add_argument("--profile", default="framework_profile.json")
     parser.add_argument("--execution-log", default="execution.log")
+    parser.add_argument("--cve-input", default="",
+                        help="V1.2: Path to dependency_cve.json (from scripts/cve_lookup.py). "
+                             "Default empty → CVE section not rendered.")
     parser.add_argument("--output", default="code-audit-report.html")
     parser.add_argument(
         "--template-dir", default="templates",
@@ -554,6 +651,7 @@ def main() -> int:
     findings = _unwrap(_load(args.findings), "findings")
     assets = _unwrap(_load(args.assets), "assets")
     profile = _load(args.profile)
+    cve_data = _load(args.cve_input) if args.cve_input else None
     execution_log = Path(args.execution_log).read_text(encoding="utf-8") \
         if Path(args.execution_log).exists() else ""
 
@@ -580,6 +678,7 @@ def main() -> int:
             test_date_start=args.test_date_start,
             test_date_end=args.test_date_end,
             tool_versions=tool_versions,
+            cve_data=cve_data,
         )
     except Exception as e:
         print(f"[FAIL] render error: {e}", file=sys.stderr)

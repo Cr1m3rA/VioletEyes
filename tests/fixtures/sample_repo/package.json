@@ -1,0 +1,12 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.17.1",
+    "lodash": "^4.17.20",
+    "axios": "~0.27.0"
+  },
+  "devDependencies": {
+    "minimist": "1.2.5"
+  }
+}

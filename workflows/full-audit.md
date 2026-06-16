@@ -39,6 +39,28 @@ LLM 读取 `framework_profile.json`，决定后续读取策略。
 
 输出 `assets.json`（仅路由表）。
 
+### Step 3.5: 第三方依赖 CVE 扫描（V1.2 新增）
+
+```bash
+# 解析所有 manifest 中的 (ecosystem, package, version) 三元组
+python3 scripts/framework_detect.py <repo_path> --emit-deps-json third_party_deps.json
+
+# 在线优先；OSV.dev 不可达时自动回落至 payloads/vulnerable-ranges.json
+python3 scripts/cve_lookup.py <repo_path> \
+    --deps-json third_party_deps.json \
+    --cache payloads/vulnerable-ranges.json \
+    --output dependency_cve.json \
+    --findings findings.json \
+    --min-severity High
+```
+
+- 覆盖 15 类 manifest（11 + build.gradle/kts + csproj/packages.config）。
+- 每包最多 1 次 OSV.dev 调用，4 路并发。
+- 命中 Critical/High 复用现有 finding schema（`vuln_class=dangerous-deps / log4shell / spring4shell`）。
+- `execution.log` 追加 `CVE 扫描: N 个包, M 条 advisory, K 条升级为 finding`。
+
+输出 `dependency_cve.json` 后，渲染器自动添加「第三方依赖 CVE 在线扫描」section。
+
 ### Step 4: 步进式读取
 
 LLM 维护 read_queue：
@@ -85,6 +107,7 @@ python3 scripts/render_report.py \
 - [ ] assets.json 至少 1 个 HTTP 入口（除非是纯库）
 - [ ] findings.json 中每条 finding 有 file_path + line
 - [ ] execution.log 不含异常堆栈（仅含正常决策日志）
+- [ ] dependency_cve.json 已生成（V1.2，仓库有 manifest 时）
 
 ## 异常处理
 
@@ -94,3 +117,6 @@ python3 scripts/render_report.py \
 | 无 manifest | 用扩展名比例 + 关键文件启发式 |
 | 找不到入口 | 扫所有 *Controller* / *router* / *handler* 命名的文件 |
 | token 预算耗尽 | 立即停止扩张，已收 finding 出报告，标 partial=true |
+| OSV.dev 不可达 + 无缓存 (V1.2) | 跳过 Step 3.5，dashboard 显示「依赖 CVE：未扫描」，`partial=true`，不阻塞报告 |
+| OSV 返回 4xx (V1.2) | 静默忽略（包不存在），`queries_failed++`，不影响其它包 |
+| 缓存陈旧 > 90 天 (V1.2) | dashboard 角标软提示「缓存可能过期」 |

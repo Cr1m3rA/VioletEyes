@@ -95,3 +95,7 @@ banner: "🎨 Frontend-focused audit — XSS / 客户端存储 / 路由守卫"
 - `frontend-assets.json` — 组件 / 路由
 - `findings.json` — 漏洞
 - `code-audit-report.html` — 报告
+
+## 不适用：第三方依赖 CVE 扫描（V1.2）
+
+前端专项默认由 `full-audit` 阶段覆盖依赖扫描。`Step 5: 第三方依赖` 仅做版本号提示性检查；如需深度联网匹配，请单独运行 `cve_lookup.py`。

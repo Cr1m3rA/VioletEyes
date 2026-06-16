@@ -10,6 +10,7 @@ Runs the renderer against tests/fixtures/ and verifies:
 """
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 import sys
@@ -112,6 +113,47 @@ def main() -> int:
     add("theme toggle present",         "切换到浅色" in html or "切换到深色" in html)
     # Footer
     add("footer present",               "Cr1m3rA" in html)
+
+    # ----- V1.2: Dependency CVE additions -----
+    # Run a second render that passes --cve-input, then re-read the output
+    cve_fixture = FIXTURES / "dependency_cve.json"
+    add("dependency_cve.json fixture exists", cve_fixture.exists())
+    if cve_fixture.exists():
+        cmd_cve = cmd + ["--cve-input", str(cve_fixture)]
+        proc_cve = subprocess.run(cmd_cve, cwd=str(ROOT), capture_output=True, text=True)
+        add("renderer accepts --cve-input flag", proc_cve.returncode == 0,
+            f"--cve-input render failed: {proc_cve.stderr[:200]}")
+        html_cve = OUT_HTML.read_text(encoding="utf-8")
+        add("CVE section title rendered",
+            "第三方依赖 CVE 在线扫描" in html_cve)
+        add("CVE badge hyperlinked to NVD",
+            re.search(r'href="https://nvd\.nist\.gov/vuln/detail/CVE-\d{4}-\d+"', html_cve) is not None)
+        add("fixed-version column populated",
+            "2.17.1" in html_cve or "2.15.0" in html_cve or "4.17.21" in html_cve)
+        add("offline-cache badge present (offline fixture)",
+            "离线缓存" in html_cve or "OSV.dev 在线" in html_cve)
+        add("top-nav has 依赖 CVE link",
+            'href="#dep-cve"' in html_cve)
+        add("dashboard shows online-scan count",
+            "在线 CVE 扫描" in html_cve or "条 advisory" in html_cve)
+        # Validate fixture shape
+        try:
+            cve_doc = json.loads(cve_fixture.read_text(encoding="utf-8"))
+            add("fixture source is osv-online/offline-cache/mixed",
+                cve_doc.get("source") in {"osv-online", "offline-cache", "mixed"})
+        except (json.JSONDecodeError, OSError) as e:
+            add("fixture parses as JSON", False, str(e))
+    else:
+        # If the fixture is missing we still need to record 8 failed checks
+        # so the count matches the plan. Mark the rest as FAIL with a hint.
+        for label in [
+            "renderer accepts --cve-input flag", "CVE section title rendered",
+            "CVE badge hyperlinked to NVD", "fixed-version column populated",
+            "offline-cache badge present (offline fixture)",
+            "top-nav has 依赖 CVE link", "dashboard shows online-scan count",
+            "fixture source is osv-online/offline-cache/mixed",
+        ]:
+            add(label, False, "tests/fixtures/dependency_cve.json missing")
 
     # Print results
     failed = 0

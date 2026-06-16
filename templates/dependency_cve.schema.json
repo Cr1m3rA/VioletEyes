@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://violet-eyes/schemas/dependency_cve.json",
+  "title": "VioletEyes Dependency CVE Output",
+  "description": "Output of scripts/cve_lookup.py — every third-party dependency that has at least one public advisory (from OSV.dev or the offline cache).",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "source", "items"],
+  "properties": {
+    "schema_version":      { "type": "string", "const": "1.0.0" },
+    "generated_at":        { "type": "string", "format": "date-time" },
+    "source":              { "type": "string", "enum": ["osv-online", "offline-cache", "mixed", "none"] },
+    "queries_total":       { "type": "integer", "minimum": 0 },
+    "queries_cached":      { "type": "integer", "minimum": 0 },
+    "queries_failed":      { "type": "integer", "minimum": 0 },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ecosystem", "name", "version", "manifest", "advisories"],
+        "properties": {
+          "ecosystem":       { "type": "string", "enum": ["npm", "PyPI", "Maven", "Go", "Packagist", "RubyGems", "crates.io", "NuGet", "Hex"] },
+          "name":            { "type": "string", "minLength": 1 },
+          "version":         { "type": "string", "minLength": 1 },
+          "manifest":        { "type": "string" },
+          "manifest_path":   { "type": "string" },
+          "ecosystem_resolved_via": { "type": "string", "enum": ["direct", "inferred"] },
+          "advisories": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/advisory" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "advisory": {
+      "type": "object",
+      "required": ["id", "summary", "severity"],
+      "properties": {
+        "id":             { "type": "string" },
+        "aliases":        { "type": "array", "items": { "type": "string" } },
+        "cve":            { "type": "array", "items": { "type": "string", "pattern": "^CVE-[0-9]{4}-[0-9]+$" } },
+        "ghsa":           { "type": "array", "items": { "type": "string" } },
+        "summary":        { "type": "string" },
+        "severity":       { "type": "string", "enum": ["Critical", "High", "Medium", "Low", "Unknown"] },
+        "cvss_score":     { "type": "number", "minimum": 0, "maximum": 10 },
+        "cvss_vector":    { "type": "string" },
+        "affected_range": { "type": "string" },
+        "fixed_versions": { "type": "array", "items": { "type": "string" } },
+        "advisory_url":   { "type": "string", "format": "uri" },
+        "nvd_url":        { "type": "string", "format": "uri" },
+        "published_at":   { "type": "string", "format": "date-time" },
+        "source":         { "type": "string", "enum": ["osv-online", "offline-cache"] }
+      }
+    }
+  }
+}
