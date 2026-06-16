@@ -3,8 +3,8 @@
 {% if cve_findings_count and cve_findings_count > 0 %}
 <section id="dep-cve" class="space-y-6">
   <div class="flex items-center gap-2">
-    <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-violet-500 to-violet-700"></span>
-    <h2 class="text-xl font-bold tracking-tight">第三方依赖 CVE 在线扫描</h2>
+    <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-violet-500 to-violet-700 dark:from-violet-400 dark:to-violet-600"></span>
+    <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">第三方依赖 CVE 在线扫描</h2>
   </div>
 
   <div class="flex flex-wrap items-center gap-2 text-xs">
@@ -69,11 +69,11 @@
             <td class="font-mono">
               <div class="flex flex-col gap-0.5">
                 <span class="text-violet-700 dark:text-violet-300">{{ c.name }}</span>
-                <span class="text-[10px] uppercase tracking-wide text-slate-400">{{ c.ecosystem }}</span>
-                <span class="text-[10px] text-slate-400 break-all">{{ c.manifest or '—' }}</span>
+                <span class="text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ c.ecosystem }}</span>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 break-all">{{ c.manifest or '—' }}</span>
               </div>
             </td>
-            <td class="font-mono text-xs">{{ c.version }}</td>
+            <td class="font-mono text-xs text-slate-700 dark:text-slate-300">{{ c.version }}</td>
             <td>
               {% set sev = c.severity or 'Unknown' %}
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold
@@ -113,7 +113,7 @@
                   {% endfor %}
                 </span>
               {% else %}
-                <span class="text-slate-400">—</span>
+                <span class="text-slate-400 dark:text-slate-500">—</span>
               {% endif %}
             </td>
             <td class="text-xs text-slate-600 dark:text-slate-300 max-w-md">{{ c.summary or '—' }}</td>

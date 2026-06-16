@@ -1,9 +1,9 @@
 {# Findings index — collapsible list with severity counts #}
 <section id="findings" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
   <details open>
-    <summary class="cursor-pointer px-6 py-5 font-semibold flex items-center justify-between gap-3">
+    <summary class="cursor-pointer px-6 py-5 font-semibold flex items-center justify-between gap-3 text-slate-900 dark:text-slate-100">
       <span class="flex items-center gap-3">
-        <svg class="w-5 h-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg class="w-5 h-5 text-violet-600 dark:text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         漏洞目录 · {{ findings_count }} 个
       </span>
       <div class="flex flex-wrap gap-1.5 text-xs">
@@ -21,7 +21,7 @@
         <li class="py-3 flex items-start gap-3 group hover:bg-slate-50 dark:hover:bg-slate-900/50 -mx-3 px-3 rounded-lg transition">
           <span class="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 grid place-items-center text-xs font-bold text-slate-500 dark:text-slate-400">{{ loop.index }}</span>
           <div class="flex-1 min-w-0">
-            <a href="#{{ f.id }}" class="text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-violet-700 dark:group-hover:text-violet-300 line-clamp-2 leading-snug">{{ f.title }}</a>
+            <a href="#{{ f.id }}" class="text-sm font-medium text-slate-900 dark:text-slate-50 group-hover:text-violet-700 dark:group-hover:text-violet-300 line-clamp-2 leading-snug">{{ f.title }}</a>
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-500 dark:text-slate-400">
               <span class="flex items-center gap-1"><span class="sev-dot {{ f.severity }}"></span><span class="font-semibold">{{ f.severity }}</span></span>
               {% if f.cvss_score %}<span>CVSS {{ f.cvss_score }}</span>{% endif %}
@@ -29,7 +29,7 @@
               <span class="font-mono truncate">{{ f.file_path }}{% if f.file_line %}:{{ f.file_line }}{% endif %}</span>
             </div>
           </div>
-          <span class="flex-shrink-0 font-mono text-xs text-slate-400">{{ f.id }}</span>
+          <span class="flex-shrink-0 font-mono text-xs text-slate-400 dark:text-slate-500">{{ f.id }}</span>
         </li>
         {% endfor %}
       </ul>

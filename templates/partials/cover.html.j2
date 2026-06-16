@@ -1,5 +1,9 @@
-{# Cover hero section #}
-<section id="cover" class="cover rounded-2xl px-8 py-14 md:px-14 md:py-20 text-white shadow-2xl">
+{# Cover hero section — dark-mode-aware
+   In dark mode the gradient goes deeper (violet-950 → slate-950) and the
+   accent orbs glow violet; in light mode the brighter violet gradient stays. #}
+<section id="cover" class="cover rounded-2xl px-8 py-14 md:px-14 md:py-20 text-white shadow-2xl
+                        dark:bg-gradient-to-br dark:from-violet-950 dark:via-slate-900 dark:to-slate-950
+                        dark:shadow-violet-900/30 dark:ring-1 dark:ring-violet-500/20">
   <div class="relative z-10 max-w-5xl mx-auto">
     <div class="flex items-center gap-3 mb-6">
       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-xs font-semibold tracking-wide uppercase">
@@ -7,58 +11,60 @@
         源码安全审计报告
       </span>
       {% if partial %}
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-100 text-xs font-semibold">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 backdrop-blur text-amber-100 text-xs font-semibold">
         ⚠ Partial — token 预算受限
       </span>
       {% endif %}
       {% if snippet_mode %}
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-400/20 text-orange-100 text-xs font-semibold">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-400/20 backdrop-blur text-orange-100 text-xs font-semibold">
         ⚠ 代码片段模式
       </span>
       {% endif %}
     </div>
 
-    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4">
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4
+               drop-shadow-[0_2px_12px_rgba(167,139,250,0.35)]
+               dark:drop-shadow-[0_2px_18px_rgba(167,139,250,0.55)]">
       {{ project_name }}
     </h1>
-    <p class="text-lg md:text-xl text-violet-100/90 mb-10 max-w-3xl">
+    <p class="text-lg md:text-xl text-violet-100/90 dark:text-violet-200/80 mb-10 max-w-3xl">
       由 VioletEyes Agent 自动生成的源码安全审计报告，覆盖 OWASP Top 10 (2021) 与 API Security Top 10 (2023)。
     </p>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
-        <div class="text-xs uppercase tracking-wide text-violet-200/80 mb-1">目标</div>
+      <div class="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10 dark:border-white/5">
+        <div class="text-xs uppercase tracking-wide text-violet-200/80 dark:text-violet-300/70 mb-1">目标</div>
         <div class="font-semibold text-base break-words" title="{{ target_raw }}">{{ target_display }}</div>
         {% if target_is_path %}
-        <div class="font-mono text-[11px] text-violet-200/70 mt-1 break-all" title="完整路径 / URL">{{ target_raw }}</div>
+        <div class="font-mono text-[11px] text-violet-200/70 dark:text-violet-300/60 mt-1 break-all" title="完整路径 / URL">{{ target_raw }}</div>
         {% endif %}
       </div>
-      <div class="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
-        <div class="text-xs uppercase tracking-wide text-violet-200/80 mb-1">审计模式</div>
+      <div class="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10 dark:border-white/5">
+        <div class="text-xs uppercase tracking-wide text-violet-200/80 dark:text-violet-300/70 mb-1">审计模式</div>
         <div class="font-semibold">{{ mode_label }}</div>
       </div>
-      <div class="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
-        <div class="text-xs uppercase tracking-wide text-violet-200/80 mb-1">测试时间</div>
+      <div class="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10 dark:border-white/5">
+        <div class="text-xs uppercase tracking-wide text-violet-200/80 dark:text-violet-300/70 mb-1">测试时间</div>
         <div class="text-sm">{{ test_date_start }} → {{ test_date_end }}</div>
       </div>
-      <div class="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
-        <div class="text-xs uppercase tracking-wide text-violet-200/80 mb-1">报告生成</div>
+      <div class="bg-white/10 dark:bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10 dark:border-white/5">
+        <div class="text-xs uppercase tracking-wide text-violet-200/80 dark:text-violet-300/70 mb-1">报告生成</div>
         <div class="text-sm">{{ report_date }}</div>
       </div>
     </div>
 
     <div class="mt-10 flex flex-wrap items-center gap-6">
       <div class="flex items-baseline gap-2">
-        <span class="text-5xl font-bold tracking-tighter">{{ findings_count }}</span>
+        <span class="text-5xl font-bold tracking-tighter drop-shadow-[0_0_18px_rgba(255,255,255,0.25)]">{{ findings_count }}</span>
         <span class="text-violet-200/80 text-sm">个漏洞</span>
       </div>
       <div class="h-10 w-px bg-white/20"></div>
       <div class="flex flex-wrap gap-2 text-xs font-semibold">
-        <span class="px-2.5 py-1 rounded-md bg-rose-500/30 border border-rose-400/40">Critical {{ counts.critical }}</span>
-        <span class="px-2.5 py-1 rounded-md bg-orange-500/30 border border-orange-400/40">High {{ counts.high }}</span>
-        <span class="px-2.5 py-1 rounded-md bg-amber-500/30 border border-amber-400/40">Medium {{ counts.medium }}</span>
-        <span class="px-2.5 py-1 rounded-md bg-cyan-500/30 border border-cyan-400/40">Low {{ counts.low }}</span>
-        <span class="px-2.5 py-1 rounded-md bg-slate-500/30 border border-slate-400/40">Info {{ counts.info }}</span>
+        <span class="px-2.5 py-1 rounded-md bg-rose-500/30 border border-rose-400/40 backdrop-blur">Critical {{ counts.critical }}</span>
+        <span class="px-2.5 py-1 rounded-md bg-orange-500/30 border border-orange-400/40 backdrop-blur">High {{ counts.high }}</span>
+        <span class="px-2.5 py-1 rounded-md bg-amber-500/30 border border-amber-400/40 backdrop-blur">Medium {{ counts.medium }}</span>
+        <span class="px-2.5 py-1 rounded-md bg-cyan-500/30 border border-cyan-400/40 backdrop-blur">Low {{ counts.low }}</span>
+        <span class="px-2.5 py-1 rounded-md bg-slate-500/30 border border-slate-400/40 backdrop-blur">Info {{ counts.info }}</span>
       </div>
     </div>
   </div>

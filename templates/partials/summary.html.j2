@@ -8,12 +8,12 @@
     <div class="prose prose-slate dark:prose-invert max-w-none text-sm leading-relaxed">
       <p>{{ executive_summary_intro | safe }}</p>
       {% if partial %}
-      <div class="not-prose mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-sm dark:bg-amber-900/20 dark:border-amber-700/50 dark:text-amber-200">
+      <div class="not-prose mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-sm">
         ⚠ <strong>注意：</strong>本次审计因 token 预算受限未完成全部代码扫描，结果可能不完整。建议扩大预算后重审。
       </div>
       {% endif %}
       {% if snippet_mode %}
-      <div class="not-prose mt-4 p-3 rounded-lg bg-orange-50 border border-orange-200 text-orange-900 text-sm dark:bg-orange-900/20 dark:border-orange-700/50 dark:text-orange-200">
+      <div class="not-prose mt-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/50 text-orange-900 dark:text-orange-200 text-sm">
         ⚠ <strong>代码片段审计模式</strong> — 没有文件树 / 调用链上下文，所有 finding 的 confidence 已自动下调。
       </div>
       {% endif %}
@@ -28,7 +28,7 @@
       <li class="flex gap-3 group">
         <span class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 grid place-items-center text-xs font-bold text-slate-500 dark:text-slate-400">{{ loop.index }}</span>
         <div class="flex-1 min-w-0">
-          <a href="#{{ f.id }}" class="text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-violet-700 dark:group-hover:text-violet-300 line-clamp-2 leading-snug">{{ f.title }}</a>
+          <a href="#{{ f.id }}" class="text-sm font-medium text-slate-900 dark:text-slate-50 group-hover:text-violet-700 dark:group-hover:text-violet-300 line-clamp-2 leading-snug">{{ f.title }}</a>
           <div class="flex items-center gap-2 mt-1 text-xs">
             <span class="sev-dot {{ f.severity }}"></span>
             <span class="font-semibold text-slate-600 dark:text-slate-400">{{ f.severity }}</span>

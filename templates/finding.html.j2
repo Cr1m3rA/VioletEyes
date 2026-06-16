@@ -1,24 +1,24 @@
 {# Single finding card — accepts a finding dict in `f` #}
 {% set sev = f.severity or 'Informational' %}
-<article id="{{ f.id }}" class="finding bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
+<article id="{{ f.id }}" class="finding bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700
                                 rounded-xl pl-7 pr-6 py-6 shadow-sm hover:shadow-md transition-shadow"
          data-severity="{{ sev }}">
 
   <header class="flex flex-wrap items-start gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
     <span class="flex-shrink-0 w-9 h-9 rounded-lg grid place-items-center font-bold text-sm text-white
-      {% if sev == 'Critical' %}bg-rose-600
-      {% elif sev == 'High' %}bg-orange-500
-      {% elif sev == 'Medium' %}bg-amber-500
-      {% elif sev == 'Low' %}bg-cyan-600
-      {% else %}bg-slate-500{% endif %}">{{ sev[0] }}</span>
+      {% if sev == 'Critical' %}bg-rose-600 dark:bg-rose-500
+      {% elif sev == 'High' %}bg-orange-500 dark:bg-orange-400
+      {% elif sev == 'Medium' %}bg-amber-500 dark:bg-amber-400
+      {% elif sev == 'Low' %}bg-cyan-600 dark:bg-cyan-400
+      {% else %}bg-slate-500 dark:bg-slate-400{% endif %}">{{ sev[0] }}</span>
 
     <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2 text-xs font-mono text-slate-400 mb-1">
+      <div class="flex items-center gap-2 text-xs font-mono text-slate-400 dark:text-slate-500 mb-1">
         <span>{{ f.id }}</span>
         {% if f.vuln_class %}<span>·</span><span>{{ f.vuln_class }}</span>{% endif %}
         {% if f.framework %}<span>·</span><span>{{ f.framework }}</span>{% endif %}
       </div>
-      <h3 class="text-lg font-semibold leading-snug text-slate-900 dark:text-slate-100">{{ f.title }}</h3>
+      <h3 class="text-lg font-semibold leading-snug text-slate-900 dark:text-slate-50">{{ f.title }}</h3>
     </div>
 
     <div class="flex flex-wrap gap-1.5 items-start">
@@ -32,7 +32,7 @@
       {% if f.cvss_score is number %}<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">CVSS {{ f.cvss_score }}</span>{% endif %}
       {% if f.cwe %}<span class="px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{{ f.cwe[0] if f.cwe is iterable and f.cwe is not string else f.cwe }}</span>{% endif %}
       {% if f.owasp_2021 %}<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">{{ f.owasp_2021 }}</span>{% endif %}
-      {% if f.human_review %}<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-300 text-yellow-900">⚠ 需人工复核</span>{% endif %}
+      {% if f.human_review %}<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-300 dark:bg-yellow-500/20 text-yellow-900 dark:text-yellow-300">⚠ 需人工复核</span>{% endif %}
     </div>
   </header>
 
@@ -122,6 +122,7 @@
   <div class="mt-5">
     <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">复现步骤</h4>
     <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-800">
+      <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
       {% for s in f.reproduction_steps %}<li>{{ s }}</li>{% endfor %}
     </ol>
   </div>
