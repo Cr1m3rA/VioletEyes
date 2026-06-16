@@ -1,12 +1,12 @@
 {# Appendix: assets, execution log, tool versions, blackbox note #}
 <section id="appendix" class="space-y-6">
   <div class="flex items-center gap-2">
-    <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-violet-500 to-violet-700 dark:from-violet-400 dark:to-violet-600"></span>
-    <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">附录</h2>
+    <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-violet-500 to-violet-700"></span>
+    <h2 class="text-xl font-bold tracking-tight">附录</h2>
   </div>
 
-  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
-    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm text-slate-900 dark:text-slate-200">6.1 代码资产清单（{{ total_assets }} 项）</summary>
+  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm">6.1 代码资产清单（{{ total_assets }} 项）</summary>
     <div class="px-6 pb-6">
       {% if assets %}
       <table class="section-table">
@@ -41,15 +41,15 @@
     </div>
   </details>
 
-  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
-    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm text-slate-900 dark:text-slate-200">6.2 Agent 执行日志（节选）</summary>
+  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm">6.2 Agent 执行日志（节选）</summary>
     <div class="px-6 pb-6">
       <pre class="language-yaml"><code class="language-yaml">{{ execution_log }}</code></pre>
     </div>
   </details>
 
-  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
-    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm text-slate-900 dark:text-slate-200">6.3 工具与版本</summary>
+  <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <summary class="cursor-pointer px-6 py-4 font-semibold text-sm">6.3 工具与版本</summary>
     <div class="px-6 pb-6">
       <table class="section-table">
         <thead><tr><th>工具</th><th>版本</th><th>用途</th></tr></thead>
@@ -68,7 +68,7 @@
       关于黑盒联动（待开发）
     </h3>
     <p class="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
-      本报告中的 finding 已按与未来配套黑盒 Skill 兼容的命名约定保留 <code class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded text-xs">url_or_path / method / parameter</code> 字段，并提供 <code class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded text-xs">scripts/extract_for_blackbox.py</code> 作为抽取接口。配套的黑盒方向 Skill 当前处于待开发状态，本报告不会触发任何外部黑盒调用。上线后将在本节补全联动脚本与调用方式。
+      本报告中的 finding 已按与未来配套黑盒 Skill 兼容的命名约定保留 <code class="bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 rounded text-xs">url_or_path / method / parameter</code> 字段，并提供 <code class="bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 rounded text-xs">scripts/extract_for_blackbox.py</code> 作为抽取接口。配套的黑盒方向 Skill 当前处于待开发状态，本报告不会触发任何外部黑盒调用。上线后将在本节补全联动脚本与调用方式。
     </p>
   </div>
 </section>

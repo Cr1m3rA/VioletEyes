@@ -47,7 +47,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
-VERSION = "1.2-hotfix"
+VERSION = "1.0.0"
 
 SEVERITY_ORDER = ["Critical", "High", "Medium", "Low", "Informational"]
 SEVERITY_FILTERS = ["All", "Critical", "High", "Medium", "Low", "Info"]

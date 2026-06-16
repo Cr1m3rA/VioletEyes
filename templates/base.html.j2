@@ -9,7 +9,7 @@
               mobileNav: false,
               activeTab: {} }"
       :class="theme === 'dark' ? 'dark' : ''"
-      class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+      class="bg-slate-50 text-slate-900 antialiased">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +21,7 @@
   <style>{{ inline.prism_css | safe }}</style>
   <style>{% include 'base.css' %}</style>
 </head>
-<body class="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+<body class="min-h-screen flex flex-col">
 
 {# ====================== Top Navigation ====================== #}
 <header class="sticky top-0 z-40 backdrop-blur bg-white/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800"
@@ -40,14 +40,14 @@
     </a>
 
     <nav class="hidden md:flex items-center gap-1 text-sm">
-      <a href="#summary"      class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 transition">概览</a>
-      <a href="#dashboard"    class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 transition">仪表盘</a>
-      <a href="#framework"    class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 transition">框架画像</a>
+      <a href="#summary"      class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">概览</a>
+      <a href="#dashboard"    class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">仪表盘</a>
+      <a href="#framework"    class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">框架画像</a>
       {% if cve_findings_count and cve_findings_count > 0 %}
-      <a href="#dep-cve"      class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 transition">依赖 CVE <span class="ml-1 text-xs text-rose-600 dark:text-rose-400 font-semibold">({{ cve_findings_count }})</span></a>
+      <a href="#dep-cve"      class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">依赖 CVE <span class="ml-1 text-xs text-rose-600 dark:text-rose-400 font-semibold">({{ cve_findings_count }})</span></a>
       {% endif %}
-      <a href="#findings"     class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 transition">漏洞详情 <span class="ml-1 text-xs text-slate-400 dark:text-slate-500">({{ findings_count }})</span></a>
-      <a href="#appendix"     class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 transition">附录</a>
+      <a href="#findings"     class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">漏洞详情 <span class="ml-1 text-xs text-slate-400">({{ findings_count }})</span></a>
+      <a href="#appendix"     class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">附录</a>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
@@ -58,16 +58,7 @@
         {{ mode_label }}
       </span>
       <button @click="theme = (theme === 'dark' ? 'light' : 'dark');
-                      document.documentElement.classList.toggle('dark', theme === 'dark');
-                      // Re-init charts so tick/grid colors follow theme
-                      if (window.Chart) {
-                        document.querySelectorAll('canvas').forEach(c => {
-                          // Chart.js attaches instance via Chart.getChart(c)
-                          const inst = window.Chart.getChart && window.Chart.getChart(c);
-                          if (inst) inst.destroy();
-                        });
-                        initCharts();
-                      }"
+                      document.documentElement.classList.toggle('dark', theme === 'dark')"
               :aria-label="theme === 'dark' ? '切换到浅色' : '切换到深色'"
               class="w-9 h-9 grid place-items-center rounded-md border border-slate-200 dark:border-slate-800
                      text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition">
@@ -89,14 +80,14 @@
   <div x-show="mobileNav" x-transition.opacity x-cloak
        class="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
     <nav class="px-6 py-3 flex flex-col gap-1 text-sm">
-      <a href="#summary"   class="px-3 py-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">概览</a>
-      <a href="#dashboard" class="px-3 py-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">仪表盘</a>
-      <a href="#framework" class="px-3 py-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">框架画像</a>
+      <a href="#summary"   class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">概览</a>
+      <a href="#dashboard" class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">仪表盘</a>
+      <a href="#framework" class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">框架画像</a>
       {% if cve_findings_count and cve_findings_count > 0 %}
-      <a href="#dep-cve"   class="px-3 py-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">依赖 CVE ({{ cve_findings_count }})</a>
+      <a href="#dep-cve"   class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">依赖 CVE ({{ cve_findings_count }})</a>
       {% endif %}
-      <a href="#findings"  class="px-3 py-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">漏洞详情</a>
-      <a href="#appendix"  class="px-3 py-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">附录</a>
+      <a href="#findings"  class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">漏洞详情</a>
+      <a href="#appendix"  class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">附录</a>
     </nav>
   </div>
 </header>
@@ -124,9 +115,9 @@
   <section id="findings-list" class="space-y-6">
     <header class="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">漏洞详情</h2>
+        <h2 class="text-2xl font-bold tracking-tight">漏洞详情</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          本次审计共发现 <strong class="text-slate-900 dark:text-slate-50">{{ findings_count }}</strong> 个漏洞。
+          本次审计共发现 <strong class="text-slate-900 dark:text-slate-100">{{ findings_count }}</strong> 个漏洞。
           可按严重度过滤，<span class="hidden md:inline">或使用浏览器 <kbd class="px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700 text-xs">Ctrl/⌘ + F</kbd> 在页面内搜索。</span>
         </p>
       </div>
@@ -139,10 +130,8 @@
                 data-sev="{{ sev }}"
                 class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full border transition
                        border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300
-                       hover:border-violet-400 dark:hover:border-violet-500
-                       hover:text-violet-700 dark:hover:text-violet-300
-                       data-[active=true]:bg-violet-600 dark:data-[active=true]:bg-violet-500
-                       data-[active=true]:text-white data-[active=true]:border-violet-600 dark:data-[active=true]:border-violet-500">
+                       hover:border-violet-400 hover:text-violet-700 dark:hover:text-violet-300
+                       data-[active=true]:bg-violet-600 data-[active=true]:text-white data-[active=true]:border-violet-600">
           {{ sev }}
         </button>
         {% endfor %}
@@ -167,7 +156,7 @@
 <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
   <div class="max-w-7xl mx-auto px-6 py-6 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
     <div>
-      报告由 <strong class="text-slate-700 dark:text-slate-200">VioletEyes Agent v{{ version }}</strong> 生成 ·
+      报告由 <strong class="text-slate-700 dark:text-slate-300">VioletEyes Agent v{{ version }}</strong> 生成 ·
       作者 <a class="underline hover:text-violet-700 dark:hover:text-violet-300" href="#">Cr1m3rA</a> ·
       生成于 {{ report_date }}
     </div>
@@ -239,13 +228,14 @@ document.addEventListener('click', (e) => {
 });
 
 // Initial: highlight code + render charts + mermaid
-function initCharts() {
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.Prism) {
+    document.querySelectorAll('pre code[class*="language-"]').forEach(el => Prism.highlightElement(el));
+  }
+
   // ----- Severity doughnut -----
   const sevCtx = document.getElementById('severityChart');
   if (sevCtx && window.Chart) {
-    const isDark = document.documentElement.classList.contains('dark');
-    const tickColor = isDark ? '#cbd5e1' : '#475569';
-    const gridColor = isDark ? 'rgba(148,163,184,0.15)' : 'rgba(148,163,184,0.2)';
     new Chart(sevCtx, {
       type: 'doughnut',
       data: {
@@ -262,10 +252,7 @@ function initCharts() {
         maintainAspectRatio: false,
         cutout: '62%',
         plugins: {
-          legend: {
-            position: 'right',
-            labels: { boxWidth: 12, padding: 12, font: { size: 11 }, color: tickColor }
-          },
+          legend: { position: 'right', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } },
           tooltip: {
             callbacks: {
               label: (ctx) => {
@@ -283,9 +270,6 @@ function initCharts() {
   // ----- Vuln class bar -----
   const clsCtx = document.getElementById('classChart');
   if (clsCtx && window.Chart) {
-    const isDark = document.documentElement.classList.contains('dark');
-    const tickColor = isDark ? '#cbd5e1' : '#475569';
-    const gridColor = isDark ? 'rgba(148,163,184,0.15)' : 'rgba(148,163,184,0.2)';
     new Chart(clsCtx, {
       type: 'bar',
       data: {
@@ -293,7 +277,7 @@ function initCharts() {
         datasets: [{
           label: '数量',
           data: {{ class_counts_json | safe }},
-          backgroundColor: isDark ? '#a78bfa' : '#7c3aed',
+          backgroundColor: '#7c3aed',
           borderRadius: 4,
           barThickness: 16
         }]
@@ -302,31 +286,20 @@ function initCharts() {
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',
-        plugins: {
-          legend: { display: false },
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 }, color: tickColor }, grid: { color: gridColor } },
-          y: { ticks: { font: { size: 11 }, color: tickColor }, grid: { display: false } }
+          x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: 'rgba(148,163,184,0.2)' } },
+          y: { ticks: { font: { size: 11 } }, grid: { display: false } }
         }
       }
     });
   }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  if (window.Prism) {
-    document.querySelectorAll('pre code[class*="language-"]').forEach(el => Prism.highlightElement(el));
-  }
-
-  initCharts();
 
   // ----- Mermaid call-chain diagrams -----
   if (window.mermaid) {
-    const isDark = document.documentElement.classList.contains('dark');
     mermaid.initialize({
       startOnLoad: false,
-      theme: isDark ? 'dark' : 'default',
+      theme: 'default',
       securityLevel: 'strict',
       fontFamily: 'inherit',
       flowchart: { htmlLabels: true, useMaxWidth: true, curve: 'basis' }
@@ -334,6 +307,9 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.mermaid').forEach((el, idx) => {
       const id = 'mmd-' + idx + '-' + Math.random().toString(36).slice(2, 8);
       el.id = id;
+      // Prefer data-source attribute (set by the renderer) so the mermaid
+      // source is never mutated by the HTML parser (e.g. <br/> -> <br>).
+      // Fall back to textContent for back-compat.
       const source = el.dataset.source || el.textContent;
       try {
         mermaid.render(id + '-svg', source).then(({ svg }) => {
