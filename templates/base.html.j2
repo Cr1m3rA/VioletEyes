@@ -4,11 +4,9 @@
    Single-file HTML report root. All third-party CSS / JS is inlined via
    {% include 'inline/...' %} so the rendered file is fully offline.
    ===================================================================== #}<!doctype html>
-<html lang="{{ lang | default('zh-CN') }}" x-data="{ theme: (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-              activeFilter: 'All',
+<html lang="{{ lang | default('zh-CN') }}" x-data="{ activeFilter: 'All',
               mobileNav: false,
               activeTab: {} }"
-      :class="theme === 'dark' ? 'dark' : ''"
       class="bg-slate-50 text-slate-900 antialiased">
 <head>
   <meta charset="UTF-8">
@@ -24,7 +22,7 @@
 <body class="min-h-screen flex flex-col">
 
 {# ====================== Top Navigation ====================== #}
-<header class="sticky top-0 z-40 backdrop-blur bg-white/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800"
+<header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200"
         x-data="{ scrolled: false }"
         x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 8)"
         :class="scrolled ? 'shadow-sm' : ''">
@@ -35,41 +33,29 @@
                      group-hover:rotate-3 transition">VE</span>
       <div class="leading-tight">
         <div class="font-semibold text-sm tracking-tight">VioletEyes</div>
-        <div class="text-xs text-slate-500 dark:text-slate-400">源码安全审计 · v{{ version }}</div>
+        <div class="text-xs text-slate-500">源码安全审计 · v{{ version }}</div>
       </div>
     </a>
 
     <nav class="hidden md:flex items-center gap-1 text-sm">
-      <a href="#summary"      class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">概览</a>
-      <a href="#dashboard"    class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">仪表盘</a>
-      <a href="#framework"    class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">框架画像</a>
+      <a href="#summary"      class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">概览</a>
+      <a href="#dashboard"    class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">仪表盘</a>
+      <a href="#framework"    class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">框架画像</a>
       {% if cve_findings_count and cve_findings_count > 0 %}
-      <a href="#dep-cve"      class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">依赖 CVE <span class="ml-1 text-xs text-rose-600 dark:text-rose-400 font-semibold">({{ cve_findings_count }})</span></a>
+      <a href="#dep-cve"      class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">依赖 CVE <span class="ml-1 text-xs text-rose-600 font-semibold">({{ cve_findings_count }})</span></a>
       {% endif %}
-      <a href="#findings"     class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">漏洞详情 <span class="ml-1 text-xs text-slate-400">({{ findings_count }})</span></a>
-      <a href="#appendix"     class="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-950/40 dark:hover:text-violet-300 transition">附录</a>
+      <a href="#findings"     class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">漏洞详情 <span class="ml-1 text-xs text-slate-400">({{ findings_count }})</span></a>
+      <a href="#appendix"     class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition">附录</a>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
       <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
-                   bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300
+                   bg-violet-100 text-violet-700
                    text-xs font-semibold tracking-wide uppercase">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2 4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5Z"/></svg>
         {{ mode_label }}
       </span>
-      <button @click="theme = (theme === 'dark' ? 'light' : 'dark');
-                      document.documentElement.classList.toggle('dark', theme === 'dark')"
-              :aria-label="theme === 'dark' ? '切换到浅色' : '切换到深色'"
-              class="w-9 h-9 grid place-items-center rounded-md border border-slate-200 dark:border-slate-800
-                     text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition">
-        <svg x-show="theme === 'light'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
-        </svg>
-        <svg x-show="theme === 'dark'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
-          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-        </svg>
-      </button>
-      <button class="md:hidden w-9 h-9 grid place-items-center rounded-md border border-slate-200 dark:border-slate-800"
+      <button class="md:hidden w-9 h-9 grid place-items-center rounded-md border border-slate-200"
               @click="mobileNav = !mobileNav" aria-label="菜单">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
@@ -78,16 +64,16 @@
 
   {# Mobile nav drawer #}
   <div x-show="mobileNav" x-transition.opacity x-cloak
-       class="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+       class="md:hidden border-t border-slate-200 bg-white">
     <nav class="px-6 py-3 flex flex-col gap-1 text-sm">
-      <a href="#summary"   class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">概览</a>
-      <a href="#dashboard" class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">仪表盘</a>
-      <a href="#framework" class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">框架画像</a>
+      <a href="#summary"   class="px-3 py-2 rounded-md hover:bg-violet-50" @click="mobileNav=false">概览</a>
+      <a href="#dashboard" class="px-3 py-2 rounded-md hover:bg-violet-50" @click="mobileNav=false">仪表盘</a>
+      <a href="#framework" class="px-3 py-2 rounded-md hover:bg-violet-50" @click="mobileNav=false">框架画像</a>
       {% if cve_findings_count and cve_findings_count > 0 %}
-      <a href="#dep-cve"   class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">依赖 CVE ({{ cve_findings_count }})</a>
+      <a href="#dep-cve"   class="px-3 py-2 rounded-md hover:bg-violet-50" @click="mobileNav=false">依赖 CVE ({{ cve_findings_count }})</a>
       {% endif %}
-      <a href="#findings"  class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">漏洞详情</a>
-      <a href="#appendix"  class="px-3 py-2 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/40" @click="mobileNav=false">附录</a>
+      <a href="#findings"  class="px-3 py-2 rounded-md hover:bg-violet-50" @click="mobileNav=false">漏洞详情</a>
+      <a href="#appendix"  class="px-3 py-2 rounded-md hover:bg-violet-50" @click="mobileNav=false">附录</a>
     </nav>
   </div>
 </header>
@@ -113,12 +99,12 @@
   {% include 'partials/findings_index.html.j2' %}
 
   <section id="findings-list" class="space-y-6">
-    <header class="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+    <header class="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-4">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">漏洞详情</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          本次审计共发现 <strong class="text-slate-900 dark:text-slate-100">{{ findings_count }}</strong> 个漏洞。
-          可按严重度过滤，<span class="hidden md:inline">或使用浏览器 <kbd class="px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700 text-xs">Ctrl/⌘ + F</kbd> 在页面内搜索。</span>
+        <p class="text-sm text-slate-500 mt-1">
+          本次审计共发现 <strong class="text-slate-900">{{ findings_count }}</strong> 个漏洞。
+          可按严重度过滤，<span class="hidden md:inline">或使用浏览器 <kbd class="px-1.5 py-0.5 rounded border border-slate-300 text-xs">Ctrl/⌘ + F</kbd> 在页面内搜索。</span>
         </p>
       </div>
       {# Severity filter (Alpine) #}
@@ -129,8 +115,8 @@
                 :data-active="activeFilter === $el.dataset.sev"
                 data-sev="{{ sev }}"
                 class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full border transition
-                       border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300
-                       hover:border-violet-400 hover:text-violet-700 dark:hover:text-violet-300
+                       border-slate-200 text-slate-600
+                       hover:border-violet-400 hover:text-violet-700
                        data-[active=true]:bg-violet-600 data-[active=true]:text-white data-[active=true]:border-violet-600">
           {{ sev }}
         </button>
@@ -153,19 +139,19 @@
   {% include 'partials/disclaimer.html.j2' %}
 </main>
 
-<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-  <div class="max-w-7xl mx-auto px-6 py-6 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+<footer class="border-t border-slate-200 bg-white">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
     <div>
-      报告由 <strong class="text-slate-700 dark:text-slate-300">VioletEyes Agent v{{ version }}</strong> 生成 ·
-      作者 <a class="underline hover:text-violet-700 dark:hover:text-violet-300" href="#">Cr1m3rA</a> ·
+      报告由 <strong class="text-slate-700">VioletEyes Agent v{{ version }}</strong> 生成 ·
+      作者 <a class="underline hover:text-violet-700" href="#">Cr1m3rA</a> ·
       生成于 {{ report_date }}
     </div>
     <div class="flex items-center gap-3">
-      <a class="hover:text-violet-700 dark:hover:text-violet-300" href="https://owasp.org/" target="_blank" rel="noopener">OWASP</a>
+      <a class="hover:text-violet-700" href="https://owasp.org/" target="_blank" rel="noopener">OWASP</a>
       <span>·</span>
-      <a class="hover:text-violet-700 dark:hover:text-violet-300" href="https://cwe.mitre.org/" target="_blank" rel="noopener">CWE</a>
+      <a class="hover:text-violet-700" href="https://cwe.mitre.org/" target="_blank" rel="noopener">CWE</a>
       <span>·</span>
-      <a class="hover:text-violet-700 dark:hover:text-violet-300" href="#" onclick="window.print();return false">打印 / 导出 PDF</a>
+      <a class="hover:text-violet-700" href="#" onclick="window.print();return false">打印 / 导出 PDF</a>
     </div>
   </div>
 </footer>
@@ -316,10 +302,10 @@ window.addEventListener('DOMContentLoaded', () => {
           el.innerHTML = svg;
         }).catch(err => {
           const msg = (err && err.message) ? err.message : String(err);
-          el.innerHTML = '<pre class="text-xs text-rose-600 dark:text-rose-400 whitespace-pre-wrap">' + msg + '</pre>';
+          el.innerHTML = '<pre class="text-xs text-rose-600 whitespace-pre-wrap">' + msg + '</pre>';
         });
       } catch (e) {
-        el.innerHTML = '<pre class="text-xs text-rose-600 dark:text-rose-400 whitespace-pre-wrap">' + e.message + '</pre>';
+        el.innerHTML = '<pre class="text-xs text-rose-600 whitespace-pre-wrap">' + e.message + '</pre>';
       }
     });
   }
