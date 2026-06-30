@@ -1,0 +1,10 @@
+# VioletEyes-neo Agent Runtime deps
+jinja2>=3.1
+pyyaml>=6.0
+python-dotenv>=1.0
+pydantic>=2.5
+
+# ── 可选（Phase 1+ 启用）──
+# ripgrep via subprocess
+# ast-grep via subprocess
+# OSV.dev via urllib (stdlib)

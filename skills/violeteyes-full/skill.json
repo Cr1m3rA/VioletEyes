@@ -1,0 +1,159 @@
+{
+  "name": "VioletEyes",
+  "version": "1.0.0",
+  "description": "面向白盒源码安全审计的 AI Agent Skill，开发者 Cr1m3rA。覆盖 Java / Spring / Python / PHP / Node.js / Go / Ruby / C# / .NET / Vue / React / Angular 等主流前后端框架以及不完整代码片段，通过步进式读取 + sink/source 模式匹配 + LLM 可达性推理，输出单文件 HTML 审计报告。当前版本为单体白盒审计，黑盒联动处于待开发状态。",
+  "author": "Cr1m3rA",
+  "license": "Authorized-Testing-Only",
+  "entry": "SKILL.md",
+  "framework_compatibility": [
+    "claude-code",
+    "cline",
+    "roo-code",
+    "continue",
+    "cursor",
+    "aider"
+  ],
+  "mcp": {
+    "required": [],
+    "optional": [
+      {
+        "name": "semgrep",
+        "purpose": "可选：调用本地 semgrep 引擎做第一轮 sink/source 扫描加速"
+      },
+      {
+        "name": "codeql",
+        "purpose": "可选：调用 CodeQL 做深度数据流分析"
+      }
+    ],
+    "auto_detect": false
+  },
+  "permissions": {
+    "network": ["api.osv.dev:443"],
+    "filesystem": ["read_source", "write_report"],
+    "execution": ["python3"]
+  },
+  "inputs": {
+    "source": { "type": "string", "required": true, "description": "本地目录 / Git URL / 压缩包 / 文本片段" },
+    "mode": { "type": "string", "default": "full", "enum": ["full", "incremental", "snippet", "api-focused", "frontend-focused", "diff"] },
+    "languages": { "type": "array", "default": [], "items": { "type": "string" } },
+    "scope": { "type": "array", "default": [] },
+    "focus": { "type": "array", "default": [] },
+    "severity_floor": { "type": "string", "default": "low", "enum": ["info", "low", "medium", "high", "critical"] },
+    "max_findings": { "type": "integer", "default": 100 },
+    "report_path": { "type": "string", "default": "./code-audit-report.html" },
+    "include_snippet": { "type": "boolean", "default": true },
+    "token_budget": { "type": "integer", "default": 200000 },
+    "enable_cve_lookup": { "type": "boolean", "default": true, "description": "V1.2: 是否启用第三方依赖 CVE 联网扫描 (Step 3.5)" },
+    "cve_input": { "type": "string", "default": "", "description": "V1.2: 预生成的 dependency_cve.json 路径，缺则不渲染 CVE section" },
+    "cve_min_severity": { "type": "string", "default": "High", "enum": ["Low", "Medium", "High", "Critical"], "description": "V1.2: 自动升级为 finding 的最低严重度" },
+    "cve_offline_only": { "type": "boolean", "default": false, "description": "V1.2: 强制仅用离线缓存（内网/隔离环境）" }
+  },
+  "outputs": {
+    "report": "HTML 源码审计报告",
+    "findings": "JSON 漏洞清单",
+    "assets": "JSON 代码资产清单",
+    "framework_profile": "JSON 语言/框架/入口画像",
+    "execution_log": "TXT Agent 步进日志",
+    "dependency_cve": "V1.2: JSON 第三方依赖 CVE 清单 (dependency_cve.schema.json)"
+  },
+  "supported_languages": [
+    "java", "kotlin", "scala", "groovy",
+    "python", "python-asyncio",
+    "php",
+    "javascript", "typescript",
+    "go",
+    "ruby",
+    "csharp", "aspnet",
+    "rust",
+    "vue", "react", "angular", "svelte",
+    "html", "css",
+    "sql",
+    "yaml", "json", "toml", "ini"
+  ],
+  "supported_frameworks": {
+    "java_backend": [
+      "spring-boot", "spring-mvc", "spring-webflux",
+      "quarkus", "micronaut", "helidon",
+      "jfinal", "nutz", "dubbo",
+      "struts2", "jsf", "gwt"
+    ],
+    "python_backend": [
+      "django", "flask", "fastapi", "tornado", "sanic", "aiohttp",
+      "bottle", "pyramid", "falcon", "starlette"
+    ],
+    "php_backend": [
+      "laravel", "symfony", "thinkphp", "yii", "codeigniter",
+      "slim", "lumen", "phalcon", "discuz", "wordpress", "typecho"
+    ],
+    "nodejs_backend": [
+      "express", "koa", "fastify", "nestjs", "hapi", "egg",
+      "sails", "loopback", "restify", "polka"
+    ],
+    "go_backend": [
+      "gin", "echo", "fiber", "beego", "iris", "chi",
+      "revel", "buffalo", "kratos"
+    ],
+    "ruby_backend": ["rails", "sinatra", "hanami", "grape"],
+    "csharp_backend": ["aspnet-mvc", "aspnet-core", "webapi", "nancyfx", "service-stack"],
+    "frontend": [
+      "vue", "vue2", "vue3", "nuxt", "vuex", "pinia",
+      "react", "next", "gatsby", "redux", "mobx", "zustand",
+      "angular", "angularjs", "ionic",
+      "svelte", "sveltekit",
+      "jquery", "backbone", "ember",
+      "electron", "tauri"
+    ]
+  },
+  "vulnerability_classes": [
+    "sqli", "nosqli", "ldap", "xpath", "cmdi", "code-injection",
+    "xss-reflected", "xss-stored", "xss-dom", "xss-misuse",
+    "ssrf", "open-redirect", "header-injection",
+    "ssti", "expression-injection",
+    "file-read", "file-write", "file-upload", "path-traversal", "zip-slip",
+    "deserialization-java", "deserialization-php", "deserialization-python", "deserialization-nodejs", "deserialization-golang",
+    "xxe", "xinclude",
+    "idor", "bola", "broken-function-level-authz", "missing-auth",
+    "auth-bypass", "weak-crypto", "insecure-random", "hardcoded-secret",
+    "jwt-vuln", "session-fixation", "csrf", "clickjacking", "cors-misconfig",
+    "race-condition", "toctou", "mass-assignment",
+    "log4shell", "spring4shell", "log4j-rce", "log4j-format", "ognl-injection", "el-injection", "spel-injection",
+    "prototype-pollution", "regex-dos", "xxe-via-upload",
+    "missing-security-header", "debug-mode-enabled", "default-credentials",
+    "dangerous-deps", "insecure-config", "weak-tls",
+    "business-logic", "info-leak"
+  ],
+  "capabilities": {
+    "framework_detection": true,
+    "entry_point_discovery": true,
+    "incremental_code_reading": true,
+    "sink_pattern_matching": true,
+    "taint_propagation_llm": true,
+    "snippet_mode": true,
+    "multi_language": true,
+    "multi_framework": true,
+    "html_reporting": true,
+    "owasp_mapping": true,
+    "cwe_mapping": true,
+    "cvss_scoring": true,
+    "dependency_cve_lookup": true,
+    "offline_cve_cache": true
+  },
+  "future_capabilities": {
+    "blackbox_integration": {
+      "status": "planned",
+      "description": "与配套的渗透测试方向 Skill 联动，由本 Skill 产出 finding 中的 url_or_path / method / parameter 字段，移交黑盒层做 PoC 验证。",
+      "depends_on": "配套 Skill 尚未发布",
+      "scripts": ["scripts/extract_for_blackbox.py"]
+    },
+    "lockfile_parsing": {
+      "status": "planned",
+      "description": "V1.3: 解析 package-lock.json / yarn.lock / go.sum / Cargo.lock 等 lockfile，避免对已被 lock 修复的版本过度告警。",
+      "depends_on": "V1.2 manifest 解析稳定"
+    },
+    "transitive_resolution": {
+      "status": "planned",
+      "description": "V1.3: 在有 lockfile 时展开传递依赖图，覆盖嵌套依赖漏洞。",
+      "depends_on": "lockfile_parsing"
+    }
+  }
+}

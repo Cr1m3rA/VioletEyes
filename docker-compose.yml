@@ -1,0 +1,84 @@
+# VioletEyes-neo docker-compose（spec §10.1）
+#
+# 修复  §6.1 部署陷阱：
+#  - 移除子仓库强制挂载（改为可选）
+#  - 默认密钥必须替换（启动时校验，否则 throw）
+#  - 移除 Dockerfile `||true` 兜底（强制 native build 成功）
+
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: violeteyes-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: violeteyes-api
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: /app/storage/violeteyes.db
+      STORAGE_DIR: /app/storage
+      CODE_VERSION_DIR: /app/storage/code-versions
+      SKILL_BUNDLE_DIR: /app/storage/skills
+      REPORT_DIR: /app/storage/reports
+      TEMPLATES_DIR: /app/templates
+      # ⚠️ 必须在部署前替换以下三个为高熵 32+ 字符串
+      # 启动时 validateSecretsOrThrow() 会校验长度 + 熵 + 占位符
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET required, generate via: openssl rand -hex 32}"
+      APP_MASTER_KEY: "${APP_MASTER_KEY:?APP_MASTER_KEY required, generate via: openssl rand -hex 32}"
+      SESSION_SECRET: "${SESSION_SECRET:?SESSION_SECRET required, generate via: openssl rand -hex 32}"
+      ACCESS_TOKEN_MS: 900000
+      REFRESH_TOKEN_MS: 604800000
+      COOKIE_SECURE: 'true'
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-https://api.anthropic.com}
+      ANTHROPIC_DEFAULT_MODEL: ${ANTHROPIC_DEFAULT_MODEL:-claude-opus-4-8}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+      OPENAI_DEFAULT_MODEL: ${OPENAI_DEFAULT_MODEL:-gpt-4o}
+      SCAN_MAX_CONCURRENT: 3
+      SCAN_TIMEOUT_MS: 86400000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8090}
+      BULL_BOARD_BASIC_USER: ${BULL_BOARD_BASIC_USER:-admin}
+      BULL_BOARD_BASIC_PASSWORD: ${BULL_BOARD_BASIC_PASSWORD:-please-replace}
+    ports:
+      - '127.0.0.1:3030:3000'
+    volumes:
+      - api-storage:/app/storage
+      # 共享 templates（从 .env 的 TEMPLATES_DIR 也可覆盖）
+      - ./templates:/app/templates:ro
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: violeteyes-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '127.0.0.1:8090:80'
+    # nginx 在容器内反代 /api 和 /socket.io 到 api:3000
+
+volumes:
+  redis-data:
+  api-storage:

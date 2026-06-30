@@ -36,3 +36,50 @@ htmlcov/
 # 用户输入的审计目标（不应进 git）
 /audit-targets/
 /example-projects/
+
+# ── VioletEyes-neo (platform) ─────────────────────────────────────
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build outputs
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+apps/api/coverage/
+apps/web/coverage/
+packages/*/coverage/
+
+# logs / runtime
+storage/
+.violeteyes/
+*.log
+
+# environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# worktrees
+.worktrees/
