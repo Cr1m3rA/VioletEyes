@@ -32,8 +32,70 @@ url_or_path / method / parameter 字段仅作结构化保留，便于将来联�
 5. 不调用任何外部渗透测试 Skill 或 MCP；本 Skill 是自包含的。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+§0.5  强约束 (HARD CONSTRAINTS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+> 本节为 V1.3 起新增的硬性条款。任何运行时若与 H1-H4 冲突，**以本节为准**。
+> 核心原则：审计中的"省略"必须建立在"已确认该处不构成风险"之上，
+> 而不是建立在"为节省 token 或时间预算"之上。
+
+H1. **禁止以资源预算为由跳过未定性的检查项**
+    在任何阶段（Phase 1-5），如果 Agent 倾向于跳过某个文件 / 入口 / 风险
+    维度，理由必须是下列之一，否则视为违规：
+      a) 该文件已确认无 sink（纯常量、空文件、纯类型定义、生成的胶水代码）；
+      b) 该文件属于"安全无关目录"（README / docs / CHANGELOG / lock 文件 /
+         编译产物 / 测试代码 / *.min.js / *.map / 资源文件）；
+      c) 该文件已被读取并经 sink 模式匹配 + LLM 语义判断为"无可达 sink"；
+      d) token 预算或上下文窗口已达硬上限，并已在 execution.log 中标注。
+    严禁以"不重要""看上去干净""已经够多 finding 了""按 P0 排序排不到"
+    作为跳过理由。
+
+H2. **风险维度的强制覆盖清单**
+    不论 HTTP 路由表大小 / 调用频率 / 用户规模，下列六类**必须**单独完
+    成 Phase 3 + Phase 4，不能被"按危险度排序"的策略裁掉：
+      1. 全局鉴权基线：middleware / interceptor / filter / auth guard /
+         Spring Security / JwtFilter / 自实现 header trust 等 — 决定整
+         个应用的鉴权基线。
+      2. 所有 controller / router / handler：覆盖每个 HTTP 入口至少一
+         遍（即便上层有 RBAC，controller 层仍可能存在硬编码 IDOR / 业
+         务逻辑漏洞）。
+      3. 后台任务：cron / scheduled / @Scheduled / scheduler / job queue
+         / 定时脚本。
+      4. 消息层：mq / consumer / subscriber / event handler。消息体未校
+         验等价于数据注入入口。
+      5. 外部服务客户端：lib / client / sdk / wrapper。硬编码密钥 / 弱
+         TLS / 错配超时 / 不校验响应等风险多在此处。
+      6. 配置与数据库迁移：application.yml / settings.py / .env* /
+         migration / *.sql / config_default.go 等。默认密钥、debug 默认
+         开启、缺失 NOT NULL 等问题经常被遗漏。
+
+H3. **风险维度覆盖自检（Pre-Phase-4 Gate）**
+    进入 Phase 4（漏洞挖掘）前必须填写以下自检表，写入 execution.log：
+      - [ ] H2.1 全局鉴权基线已读 + 是否含 trusted-header-only 风险？
+      - [ ] H2.2 全部 controller / router / handler 已读，与 assets.json 中
+            HTTP 入口 1:1 对账
+      - [ ] H2.3 全部 cron / scheduled 任务已读
+      - [ ] H2.4 全部 mq / consumer 已读
+      - [ ] H2.5 全部外部服务客户端已读
+      - [ ] H2.6 配置文件 + 迁移脚本已读
+    任意一项未完成必须先补完才能进入 Phase 4；若 token 已硬上限，则强
+    制 partial=true 并在 execution.log 末尾列出未覆盖项。
+
+H4. **execution.log 必须留痕**
+    execution.log 是审计可复盘性的唯一证据。Agent 必须记录：
+      - 每个风险维度的覆盖状态（H2.1-H2.6 各一行 OK / N/A + 跳过文件清单）；
+      - 任何"主动省略"的判断与依据（H1.a-d 中的具体类型）；
+      - token 预算的硬限制事件（如有）。
+    不留痕的审计等于没做。
+
+违反 H1-H4 的产出视为不合格。即便 finding 数量很多，只要存在"以资源
+为名"跳过的风险维度，本次审计报告顶部 banner 必须显式标注
+「⚠ INCOMPLETE — 风险维度 [H2.x] 未覆盖」，并在附录列出未覆盖清单。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 §1   输入模式 (mode)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 
 支持 5 种模式，由 inputs.mode 决定：
 
@@ -101,15 +163,19 @@ snippet 模式与其他模式**完全分叉**——没有文件树、没有 mani
   ✗ 一次性 Read 一个超长文件
   ✗ 读 README / docs / test 找漏洞（除非审计测试代码）
   ✗ 调用任何外部 Skill / MCP 做渗透测试
+  ✗ **因 token 预算或时间预算等考量，主动跳过尚未确认无漏洞的检查项**
+    （见 §0.5 H1-H4）
 
 强制行为：
   ✓ 先 ls -la <root> / tree -L 2 <root>（用 Bash 或 read_file with file_path=tree）
   ✓ 先 read manifest 推断框架
-  ✓ 维护 read_queue = [入口文件...]
+  ✓ 维护 read_queue = [入口文件, 配置文件, manifest] ∪ {已知风险维度的全部文件}
+    — "已知风险维度"由 §0.5 H2 给出，不以 P0 优先级作为唯一取舍标准
   ✓ 每次只 Read 一个文件，且 offset=0 limit=1500
   ✓ 超长文件用 offset/limit 分块，且 read_set[file] 标记已读段避免重叠
   ✓ 同源（同一 import）只读一次
   ✓ 命中 token 预算的 80% 时立刻停止扩张，转入 Phase 5 报告
+  ✓ **风险维度覆盖自检**：进入 Phase 4 前必须满足 §0.5 H3 要求
 
 读取顺序建议（按框架）：
   Java Spring:   Application.java → *Controller.java → *Service.java → *Repository.java

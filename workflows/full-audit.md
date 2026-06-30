@@ -109,6 +109,25 @@ python3 scripts/render_report.py \
 - [ ] execution.log 不含异常堆栈（仅含正常决策日志）
 - [ ] dependency_cve.json 已生成（V1.2，仓库有 manifest 时）
 
+### Pre-Phase-4 风险维度覆盖自检（与 system-prompt §0.5 / 03 文档 §3.12 对齐）
+
+进入 Phase 4 之前必须填写并写入 execution.log：
+
+- [ ] **H2.1 全局鉴权基线**：middleware / interceptor / filter / auth 已读
+      且明确是否存在 trusted-header-only 风险
+- [ ] **H2.2 HTTP 入口全覆盖**：所有 controller / router / handler 已读，
+      与 assets.json 中 HTTP 入口 1:1 对账，无遗漏
+- [ ] **H2.3 后台任务**：所有 cron / scheduled 任务定义已读
+- [ ] **H2.4 消息层**：所有 mq / consumer 已读
+- [ ] **H2.5 外部服务客户端**：所有 lib / client / sdk 已读
+- [ ] **H2.6 配置与迁移**：配置文件 + 迁移脚本已读
+- [ ] **省略依据留痕**：每条"主动省略"的文件在 execution.log 中标注
+      H1.a-d 中的具体类别
+
+任意一项未完成 → 先补完 → 再进入 Phase 4。若 token 已达硬上限，强
+制 `partial=true` 并在 execution.log 末尾列出未覆盖文件清单，报告
+顶部 banner 标注 `⚠ INCOMPLETE`。
+
 ## 异常处理
 
 | 异常 | 处理 |

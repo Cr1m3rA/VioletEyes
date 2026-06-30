@@ -213,3 +213,35 @@ Agent 触发 BudgetExceeded 时：
 | read_queue 空但未发现 sink | 扩展：扫所有 `*Controller*` / `*router*` / `*handler*` |
 | import 解析失败（动态语言） | 用 grep 找 "user_input" / "request" / "params" 关键词 |
 | 配置加密 / 二进制 | 跳过 + 标注无法审计 |
+
+## 3.12 风险维度覆盖（与 system-prompt §0.5 对齐）
+
+步进读取并非"想读啥读啥"。除按 import/调用图展开外，**必须**按
+下列"风险维度"独立覆盖，每一维完成 Phase 3 + Phase 4 后才能进入下
+一维：
+
+| 维度 | 必扫目录 | 关注 sink |
+|---|---|---|
+| **鉴权基线** | `middleware/` `interceptor/` `filter/` `auth/` `security/` | trusted-header-only、JWT 校验缺失、RBAC 旁路 |
+| **HTTP 入口** | `controller/` `router/` `handler/` `views/` | IDOR / 业务逻辑漏洞 / 输入校验缺失 / SSRF |
+| **后台任务** | `cron/` `scheduled/` `jobs/` `scheduler/` `@Scheduled` | SSRF / 凭据泄露 / 无 timeout 的外部调用 |
+| **消息层** | `mq/` `consumer/` `subscriber/` `event/` `kafka/` `rocketmq/` | 消息体无校验 / 签名缺失 / 反序列化 |
+| **外部服务客户端** | `lib/` `client/` `sdk/` `wrapper/` | 硬编码密钥 / 静态 IV / 弱 TLS / 0 超时 |
+| **配置与迁移** | `config/` `*.env*` `application.yml` `migration/` `*.sql` | 默认弱密钥 / debug 默认开启 / 缺约束 |
+
+**省略规则**（与 system-prompt §0.5 H1 对齐）：
+
+- 仅当下列情况成立时可省略某个文件：
+  - 纯常量 / 空文件 / 类型定义（无 sink）；
+  - 明确属于"安全无关目录"（README / docs / CHANGELOG / lock / 测试 / 
+    编译产物 / *.min.js）；
+  - 已被读取 + 经 sink 模式匹配 + LLM 语义判断为"无可达 sink"；
+  - token 预算达硬上限（必须写入 execution.log）。
+- 严禁以"按 P0 排序排不到""看起来不重要""够多了"作为省略理由。
+- execution.log 必须列出每个维度是否完成 + 跳过的具体文件 + 跳过依据。
+
+报告 partial 模式触发条件（满足任一即触发）：
+
+- 任一 H2 维度未完成；
+- execution.log 缺少 H2.1-H2.6 任意一行的状态记录；
+- 报告顶部必须 banner 标注 `⚠ INCOMPLETE — 风险维度 [H2.x] 未覆盖`。

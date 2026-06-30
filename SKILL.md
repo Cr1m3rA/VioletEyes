@@ -164,6 +164,7 @@ outputs:
 5. **白盒边界** — 不修改用户代码、不执行危险命令；建议的 PoC 仅以 `curl` / 单元测试 / 代码片段形式存在。
 6. **LLM 推理 > 模式匹配** — grep 命中的 sink 必须经 LLM 上下文推理（是否真可达？是否有防护？是否在受信上下文？）方可上升为 finding。
 7. **报告脱敏** — 代码中的密钥、内部 IP、真实账号仅截取必要最小上下文。
+8. **风险维度必须全覆盖** — 不论调用频率 / 用户规模，下列六类必须独立完成 Phase 3 + Phase 4：全局鉴权基线 / 全部 HTTP 入口 / 后台任务 / 消息层 / 外部服务客户端 / 配置与迁移。任何"主动省略"必须满足 system-prompt §0.5 H1.a-d 的具体条件，且在 execution.log 留痕。详见 [`system-prompt.md` §0.5](system-prompt.md) 与 [`docs/03-code-reading-strategy.md` §3.12](docs/03-code-reading-strategy.md)。
 
 ## 关于黑盒联动（待开发）
 
